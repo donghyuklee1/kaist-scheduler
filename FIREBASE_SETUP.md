@@ -1,6 +1,52 @@
 # Firebase 설정 가이드
 
-## Firestore 보안 규칙 설정
+## 🚨 중요: Firebase 400 오류 해결
+
+현재 Firestore에서 400 오류가 발생하고 있습니다. 이는 Firebase 설정이 완료되지 않았기 때문입니다.
+
+## 1단계: Firebase 프로젝트 생성 및 설정
+
+### 1. Firebase Console 접속
+1. [Firebase Console](https://console.firebase.google.com/)에 접속
+2. "프로젝트 추가" 클릭
+3. 프로젝트 이름 입력 (예: "kaist-scheduler")
+4. Google Analytics 활성화 (선택사항)
+5. 프로젝트 생성 완료
+
+### 2. 웹 앱 추가
+1. 프로젝트 대시보드에서 "웹" 아이콘 클릭
+2. 앱 닉네임 입력 (예: "kaist-scheduler-web")
+3. Firebase Hosting 설정 (선택사항)
+4. 앱 등록 완료
+
+### 3. Firebase SDK 설정 복사
+앱 등록 후 나타나는 설정 코드에서 다음 값들을 복사:
+```javascript
+const firebaseConfig = {
+  apiKey: "AIzaSyC...", // 이 값 복사
+  authDomain: "kaist-scheduler.firebaseapp.com", // 이 값 복사
+  projectId: "kaist-scheduler", // 이 값 복사
+  storageBucket: "kaist-scheduler.appspot.com", // 이 값 복사
+  messagingSenderId: "123456789", // 이 값 복사
+  appId: "1:123456789:web:abc123" // 이 값 복사
+}
+```
+
+## 2단계: 환경 변수 설정
+
+프로젝트 루트에 `.env.local` 파일을 생성하고 다음 내용을 추가:
+
+```env
+# Firebase 설정
+VITE_FIREBASE_API_KEY=AIzaSyC... (위에서 복사한 값)
+VITE_FIREBASE_AUTH_DOMAIN=kaist-scheduler.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=kaist-scheduler
+VITE_FIREBASE_STORAGE_BUCKET=kaist-scheduler.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
+VITE_FIREBASE_APP_ID=1:123456789:web:abc123
+```
+
+## 3단계: Firestore 보안 규칙 설정
 
 모임 생성과 실시간 동기화가 제대로 작동하려면 Firebase Console에서 Firestore 보안 규칙을 설정해야 합니다.
 

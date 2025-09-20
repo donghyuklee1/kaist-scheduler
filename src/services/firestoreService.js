@@ -89,33 +89,61 @@ export const deleteEvent = async (eventId) => {
 
 // 모든 모임 구독 (공개 모임)
 export const subscribeToMeetings = (callback) => {
-  // orderBy 없이 먼저 시도하고, 실패하면 클라이언트에서 정렬
-  const q = query(collection(db, COLLECTIONS.MEETINGS))
+  try {
+    // Firebase 설정 확인
+    if (!db) {
+      console.error('❌ Firestore 데이터베이스가 초기화되지 않았습니다.')
+      callback([])
+      return () => {}
+    }
 
-  return onSnapshot(q, (snapshot) => {
-    console.log('모임 데이터 변경 감지:', snapshot.docs.length, '개 모임')
-    const meetings = snapshot.docs.map(doc => {
-      const data = doc.data()
-      console.log('모임 데이터:', { id: doc.id, title: data.title, createdAt: data.createdAt })
-      return {
-        id: doc.id,
-        ...data
+    // orderBy 없이 먼저 시도하고, 실패하면 클라이언트에서 정렬
+    const q = query(collection(db, COLLECTIONS.MEETINGS))
+
+    return onSnapshot(q, (snapshot) => {
+      console.log('모임 데이터 변경 감지:', snapshot.docs.length, '개 모임')
+      const meetings = snapshot.docs.map(doc => {
+        const data = doc.data()
+        console.log('모임 데이터:', { id: doc.id, title: data.title, createdAt: data.createdAt })
+        return {
+          id: doc.id,
+          ...data
+        }
+      })
+      
+      // 클라이언트에서 생성일 기준으로 정렬
+      meetings.sort((a, b) => {
+        const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0)
+        const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0)
+        return bTime - aTime // 최신순
+      })
+      
+      callback(meetings)
+    }, (error) => {
+      console.error('모임 구독 오류:', error)
+      console.error('에러 상세:', {
+        code: error.code,
+        message: error.message,
+        stack: error.stack
+      })
+      
+      // Firebase 설정 문제인지 확인
+      if (error.code === 'permission-denied') {
+        console.error('❌ Firestore 보안 규칙 문제입니다. Firebase Console에서 보안 규칙을 설정해주세요.')
+      } else if (error.code === 'unavailable') {
+        console.error('❌ Firebase 서비스에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.')
+      } else if (error.message.includes('400')) {
+        console.error('❌ Firebase 설정이 잘못되었습니다. 환경 변수를 확인해주세요.')
       }
+      
+      // 오류 발생 시 빈 배열 반환
+      callback([])
     })
-    
-    // 클라이언트에서 생성일 기준으로 정렬
-    meetings.sort((a, b) => {
-      const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0)
-      const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0)
-      return bTime - aTime // 최신순
-    })
-    
-    callback(meetings)
-  }, (error) => {
-    console.error('모임 구독 오류:', error)
-    // 오류 발생 시 빈 배열 반환
+  } catch (error) {
+    console.error('Firestore 구독 초기화 오류:', error)
     callback([])
-  })
+    return () => {}
+  }
 }
 
 // 모임 생성

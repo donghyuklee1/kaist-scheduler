@@ -19,6 +19,7 @@ import { Calendar as CalendarIcon, Grid, Users } from 'lucide-react'
 import { getBuildingById } from './data/buildings'
 import { useAuth } from './contexts/AuthContext'
 import { checkFirebaseConnection } from './config/firebase'
+import FirebaseSetupAlert from './components/FirebaseSetupAlert'
 import { 
   subscribeToUserEvents, 
   subscribeToMeetings, 
@@ -55,11 +56,16 @@ function App() {
   const [editingMeeting, setEditingMeeting] = useState(null)
   const [selectedMeeting, setSelectedMeeting] = useState(null)
   const [showMeetingDetails, setShowMeetingDetails] = useState(false)
+  const [showFirebaseSetupAlert, setShowFirebaseSetupAlert] = useState(false)
 
   // Firestore 실시간 구독 설정
   useEffect(() => {
     // Firebase 연결 상태 확인
-    checkFirebaseConnection()
+    const isFirebaseConfigured = checkFirebaseConnection()
+    
+    if (!isFirebaseConfigured) {
+      setShowFirebaseSetupAlert(true)
+    }
     
     // 모든 모임 구독 (로그인 여부와 관계없이)
     const unsubscribeMeetings = subscribeToMeetings((meetingsData) => {
@@ -363,6 +369,12 @@ function App() {
           />
         </Suspense>
       )}
+
+      {/* Firebase 설정 알림 */}
+      <FirebaseSetupAlert
+        isVisible={showFirebaseSetupAlert}
+        onClose={() => setShowFirebaseSetupAlert(false)}
+      />
     </div>
   )
 }

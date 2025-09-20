@@ -4,12 +4,33 @@ import { getFirestore } from 'firebase/firestore'
 
 // Firebase 설정 (환경 변수에서 가져옴)
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "demo-api-key",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "demo-project.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo-project",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "demo-project.appspot.com",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "demo-app-id"
+}
+
+// Firebase 설정 검증
+const validateFirebaseConfig = () => {
+  const requiredFields = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId']
+  const missingFields = requiredFields.filter(field => !firebaseConfig[field] || firebaseConfig[field].includes('demo-'))
+  
+  if (missingFields.length > 0) {
+    console.error('❌ Firebase 설정이 완료되지 않았습니다!')
+    console.error('누락된 필드:', missingFields)
+    console.error('해결 방법:')
+    console.error('1. Firebase Console (https://console.firebase.google.com/)에서 프로젝트 생성')
+    console.error('2. 프로젝트 설정 > 일반 탭에서 웹 앱 추가')
+    console.error('3. Firebase SDK 설정에서 설정값 복사')
+    console.error('4. .env.local 파일에 환경 변수 설정')
+    console.error('5. 개발 서버 재시작')
+    return false
+  }
+  
+  console.log('✅ Firebase 설정이 완료되었습니다!')
+  return true
 }
 
 // Firebase 앱 초기화
@@ -28,6 +49,15 @@ export const checkFirebaseConnection = () => {
   console.log('- Auth Domain:', firebaseConfig.authDomain)
   console.log('- API Key:', firebaseConfig.apiKey ? '설정됨' : '누락')
   console.log('- App ID:', firebaseConfig.appId ? '설정됨' : '누락')
+  
+  // 설정 검증 실행
+  const isValid = validateFirebaseConfig()
+  
+  if (!isValid) {
+    console.warn('⚠️ Firebase가 제대로 설정되지 않아 일부 기능이 작동하지 않을 수 있습니다.')
+  }
+  
+  return isValid
 }
 
 // Google Auth Provider
