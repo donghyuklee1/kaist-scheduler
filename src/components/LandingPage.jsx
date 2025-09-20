@@ -72,7 +72,7 @@ const LandingPage = ({ onGetStarted }) => {
                 </div>
               </div>
               <h1 className="text-6xl font-bold text-gray-900 dark:text-white mb-4">
-                KAIST Scheduler
+                Compendium
               </h1>
               <p className="text-xl text-gray-600 dark:text-gray-300 mb-2">
                 간편한 일정 관리
@@ -151,7 +151,7 @@ const LandingPage = ({ onGetStarted }) => {
               주요 기능
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300">
-              KAIST Scheduler가 제공하는 강력한 기능들을 만나보세요
+              Compendium이 제공하는 강력한 기능들을 만나보세요
             </p>
           </motion.div>
 
@@ -191,7 +191,7 @@ const LandingPage = ({ onGetStarted }) => {
             className="text-center mb-16"
           >
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              왜 KAIST Scheduler를 선택해야 할까요?
+              왜 Compendium을 선택해야 할까요?
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300">
               KAIST 구성원을 위해 특별히 설계된 기능들

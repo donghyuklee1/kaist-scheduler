@@ -1,5 +1,5 @@
 {
-  "name": "kaist-scheduler",
+  "name": "compendium",
   "version": "1.0.0",
   "description": "KAIST 학생들을 위한 세련된 일정 관리 프로그램",
   "type": "module",

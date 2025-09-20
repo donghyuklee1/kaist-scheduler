@@ -30,10 +30,10 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
             <div className="w-10 h-10 bg-gradient-to-br from-kaist-blue to-kaist-lightblue rounded-xl flex items-center justify-center">
               <CalendarIcon className="w-6 h-6 text-white" />
             </div>
-            <div className="text-left">
-              <h1 className="text-2xl font-bold text-kaist-blue leading-tight">KAIST Scheduler</h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400 leading-tight">간편한 일정 관리</p>
-            </div>
+                <div className="text-left">
+                  <h1 className="text-2xl font-bold text-kaist-blue leading-tight">Compendium</h1>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-tight">간편한 일정 관리</p>
+                </div>
           </motion.button>
 
           {/* View Toggle */}
