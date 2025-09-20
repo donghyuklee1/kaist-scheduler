@@ -87,9 +87,30 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowNotificationModal(true)}
-              className="p-3 bg-white dark:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-kaist-blue dark:hover:text-blue-400"
+              className="relative p-3 bg-white dark:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-kaist-blue dark:hover:text-blue-400"
             >
               <Bell className="w-5 h-5" />
+              {/* 읽지 않은 알림 개수 표시 */}
+              {(() => {
+                const unreadCount = meetings.reduce((count, meeting) => {
+                  if (meeting.announcements && Array.isArray(meeting.announcements)) {
+                    return count + meeting.announcements.filter(announcement => 
+                      (announcement.priority === 'high' || announcement.priority === 'urgent')
+                    ).length
+                  }
+                  return count
+                }, 0)
+                
+                return unreadCount > 0 ? (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                  >
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </motion.div>
+                ) : null
+              })()}
             </motion.button>
             
             {/* 다크모드 토글 */}
