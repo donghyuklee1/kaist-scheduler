@@ -105,7 +105,7 @@ const LandingPage = ({ onGetStarted }) => {
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10">
                 <img 
-                  src="/SCR-20250921-cyau.png" 
+                  src="/Adobe Express - file.png" 
                   alt="Compendium Logo" 
                   className="w-full h-full object-contain"
                   onError={(e) => {
@@ -158,7 +158,7 @@ const LandingPage = ({ onGetStarted }) => {
             >
               <div className="w-40 h-40 mx-auto mb-4">
                 <img 
-                  src="/SCR-20250921-cyau.png" 
+                  src="/Adobe Express - file.png" 
                   alt="Compendium Logo" 
                   className="w-full h-full object-contain"
                   onError={(e) => {

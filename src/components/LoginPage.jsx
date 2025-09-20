@@ -55,7 +55,7 @@ const LoginPage = ({ onBack }) => {
           <div className="text-center mb-8">
             <div className="w-20 h-20 mx-auto mb-6">
               <img 
-                src="/SCR-20250921-cyau.png" 
+                src="/Adobe Express - file.png" 
                 alt="Compendium Logo" 
                 className="w-full h-full object-contain"
                 onError={(e) => {

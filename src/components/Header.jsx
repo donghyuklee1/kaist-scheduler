@@ -29,7 +29,7 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
           >
             <div className="w-10 h-10 rounded-xl flex items-center justify-center">
               <img 
-                src="/SCR-20250921-cyau.png" 
+                src="/Adobe Express - file.png" 
                 alt="Compendium Logo" 
                 className="w-full h-full object-contain"
                 onError={(e) => {
