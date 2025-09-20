@@ -51,11 +51,11 @@ const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, 
     }
   }, [meeting, currentUser])
 
-  // 시간 슬롯 생성 (9시부터 16시까지, 30분 단위)
+  // 시간 슬롯 생성 (9시부터 23시까지, 30분 단위)
   const generateTimeSlots = () => {
     const slots = []
     const startHour = 9
-    const endHour = 16
+    const endHour = 23
     
     for (let hour = startHour; hour <= endHour; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {

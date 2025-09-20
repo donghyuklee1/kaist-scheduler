@@ -29,6 +29,7 @@ import {
   deleteEvent as deleteEventInFirestore, 
   createMeeting as createMeetingInFirestore, 
   updateMeeting as updateMeetingInFirestore, 
+  deleteMeeting as deleteMeetingInFirestore,
   joinMeeting as joinMeetingInFirestore, 
   updateAvailability as updateAvailabilityInFirestore, 
   addAnnouncement as addAnnouncementInFirestore, 
@@ -232,6 +233,27 @@ function App() {
     }
   }
 
+  const deleteMeeting = async (meetingId) => {
+    try {
+      // Firebase 설정 확인
+      const isFirebaseConfigured = checkFirebaseConnection()
+      if (!isFirebaseConfigured) {
+        alert('Firebase가 설정되지 않아 모임을 삭제할 수 없습니다.')
+        return
+      }
+      
+      await deleteMeetingInFirestore(meetingId)
+      alert('모임이 성공적으로 삭제되었습니다.')
+      
+      // 모임 세부사항에서 돌아가기
+      setShowMeetingDetails(false)
+      setSelectedMeeting(null)
+    } catch (error) {
+      console.error('모임 삭제 실패:', error)
+      alert('모임 삭제에 실패했습니다: ' + error.message)
+    }
+  }
+
   const openMeetingModal = (meeting = null) => {
     // 로그인하지 않은 사용자는 모임 생성 불가
     if (!meeting && (!user || !user.uid)) {
@@ -363,6 +385,10 @@ function App() {
                   setSelectedDate(date)
                   openEventModal({ date })
                 }}
+                onMeetingClick={(meeting) => {
+                  setSelectedMeeting(meeting)
+                  setShowMeetingDetails(true)
+                }}
                 onViewChange={setView}
                 currentUser={user}
               />
@@ -378,6 +404,7 @@ function App() {
                   meeting={selectedMeeting}
                   currentUser={user}
                   onBack={() => setShowMeetingDetails(false)}
+                  onDeleteMeeting={deleteMeeting}
                 />
               ) : selectedMeeting ? (
                 <TimeCoordination

@@ -11,6 +11,7 @@ const Dashboard = ({
   meetings, 
   onEventClick, 
   onDateClick,
+  onMeetingClick,
   onViewChange,
   currentUser 
 }) => {
@@ -345,7 +346,9 @@ const Dashboard = ({
                   <motion.div
                     key={meeting.id}
                     whileHover={{ scale: 1.02 }}
-                    className="p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl hover:shadow-md transition-all duration-200"
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onMeetingClick(meeting)}
+                    className="p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl hover:shadow-md transition-all duration-200 cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3 flex-1 pr-4">

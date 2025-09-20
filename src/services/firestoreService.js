@@ -403,6 +403,25 @@ export const getParticipantsCountForSlot = (meeting, fullSlotId) => {
   return count
 }
 
+// 모임 삭제
+export const deleteMeetingInFirestore = async (meetingId) => {
+  try {
+    console.log('모임 삭제 시작:', meetingId)
+    
+    if (!db) {
+      throw new Error('Firestore 데이터베이스가 초기화되지 않았습니다.')
+    }
+    
+    const meetingRef = doc(db, COLLECTIONS.MEETINGS, meetingId)
+    await deleteDoc(meetingRef)
+    
+    console.log('모임 삭제 성공:', meetingId)
+  } catch (error) {
+    console.error('모임 삭제 실패:', error)
+    throw error
+  }
+}
+
 // 사용자가 모임장인지 확인
 export const isMeetingOwner = (meeting, userId) => {
   return meeting.participants.some(p => p.userId === userId && p.status === 'owner')

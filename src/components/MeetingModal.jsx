@@ -14,6 +14,8 @@ const MeetingModal = ({ meeting, onSave, onClose, currentUser }) => {
     location: '',
     buildingId: '',
     maxParticipants: '',
+    organizer: '',
+    organizerContact: '',
     status: 'draft'
   })
 
@@ -31,6 +33,8 @@ const MeetingModal = ({ meeting, onSave, onClose, currentUser }) => {
         location: meeting.location || '',
         buildingId: meeting.buildingId || '',
         maxParticipants: meeting.maxParticipants || '',
+        organizer: meeting.organizer || '',
+        organizerContact: meeting.organizerContact || '',
         status: meeting.status || 'draft'
       })
     } else {
@@ -42,6 +46,8 @@ const MeetingModal = ({ meeting, onSave, onClose, currentUser }) => {
         location: '',
         buildingId: '',
         maxParticipants: '',
+        organizer: '',
+        organizerContact: '',
         status: 'draft'
       })
     }
@@ -389,6 +395,41 @@ const MeetingModal = ({ meeting, onSave, onClose, currentUser }) => {
                 />
               </div>
               {errors.maxParticipants && <p className="text-red-500 text-sm mt-1">{errors.maxParticipants}</p>}
+            </div>
+
+            {/* 담당자 정보 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  담당자 이름
+                </label>
+                <div className="relative">
+                  <UserPlus className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={formData.organizer}
+                    onChange={(e) => setFormData({ ...formData, organizer: e.target.value })}
+                    className="input-field pl-10"
+                    placeholder="담당자 이름을 입력하세요"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  담당자 연락처
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={formData.organizerContact}
+                    onChange={(e) => setFormData({ ...formData, organizerContact: e.target.value })}
+                    className="input-field pl-10"
+                    placeholder="이메일 또는 전화번호"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* 액션 버튼 */}

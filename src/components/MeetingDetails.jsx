@@ -5,7 +5,7 @@ import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { addAnnouncement, deleteAnnouncement, isMeetingOwner, getParticipantsCountForSlot } from '../services/firestoreService'
 
-const MeetingDetails = ({ meeting, currentUser, onBack }) => {
+const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
   const [activeTab, setActiveTab] = useState('schedule') // 'schedule', 'attendance', 'announcements'
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false)
   const [announcementForm, setAnnouncementForm] = useState({
@@ -14,11 +14,11 @@ const MeetingDetails = ({ meeting, currentUser, onBack }) => {
     priority: 'normal'
   })
 
-  // 시간 슬롯 생성 (9시부터 16시까지, 30분 단위)
+  // 시간 슬롯 생성 (9시부터 23시까지, 30분 단위)
   const generateTimeSlots = () => {
     const slots = []
     const startHour = 9
-    const endHour = 16
+    const endHour = 23
     
     for (let hour = startHour; hour <= endHour; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
@@ -175,6 +175,23 @@ const MeetingDetails = ({ meeting, currentUser, onBack }) => {
                 참석율 {getAttendanceRate()}%
               </span>
             </div>
+            
+            {/* 개설자만 삭제 버튼 표시 */}
+            {isOwner && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  if (window.confirm('정말로 이 모임을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+                    onDeleteMeeting(meeting.id)
+                  }
+                }}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-200 dark:hover:bg-red-900/30 transition-all duration-300"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span className="text-sm font-medium">모임 삭제</span>
+              </motion.button>
+            )}
           </div>
         </div>
       </div>
