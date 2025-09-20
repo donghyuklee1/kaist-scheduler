@@ -1,8 +1,10 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, Users, Clock, MapPin, ArrowRight, Star, CheckCircle, Sparkles } from 'lucide-react'
+import { Calendar, Users, Clock, MapPin, ArrowRight, Star, CheckCircle, Sparkles, Moon, Sun } from 'lucide-react'
+import { useDarkMode } from '../hooks/useDarkMode'
 
 const LandingPage = ({ onGetStarted }) => {
+  const { isDarkMode, toggleDarkMode } = useDarkMode()
   const features = [
     {
       icon: <Calendar className="w-8 h-8" />,
@@ -37,6 +39,49 @@ const LandingPage = ({ onGetStarted }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800">
+      {/* Header */}
+      <header className="relative z-10">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10">
+                <img 
+                  src="/SCR-20250921-cyau.png" 
+                  alt="Compendium Logo" 
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    e.target.style.display = 'none'
+                    e.target.nextElementSibling.style.display = 'flex'
+                  }}
+                />
+                <div className="w-full h-full bg-gradient-to-br from-kaist-blue to-kaist-lightblue rounded-xl flex items-center justify-center hidden">
+                  <Calendar className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              <div className="text-left">
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Compendium</h1>
+                <p className="text-xs text-gray-600 dark:text-gray-400">간편한 일정 관리</p>
+              </div>
+            </div>
+
+            {/* Dark Mode Toggle */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleDarkMode}
+              className="p-3 rounded-xl bg-white dark:bg-gray-800 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300"
+            >
+              {isDarkMode ? (
+                <Sun className="w-5 h-5 text-yellow-500" />
+              ) : (
+                <Moon className="w-5 h-5 text-gray-600" />
+              )}
+            </motion.button>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Background Pattern */}
@@ -251,31 +296,41 @@ const LandingPage = ({ onGetStarted }) => {
         </div>
       </div>
 
-      {/* CTA Section */}
-      <div className="py-20 bg-gradient-to-r from-kaist-blue to-kaist-lightblue">
-        <div className="container mx-auto px-4 text-center">
+      {/* Contact Section */}
+      <div className="py-20 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
+        <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
+            className="text-center"
           >
-            <h2 className="text-4xl font-bold text-white mb-4">
-              지금 바로 시작해보세요!
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              문의사항이 있으신가요?
             </h2>
-            <p className="text-xl text-blue-100 mb-8">
-              간편한 로그인으로 모든 기능을 무료로 이용하실 수 있습니다
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+              서비스 개선이나 버그 신고, 새로운 기능 제안 등 언제든지 연락주세요
             </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onGetStarted}
-              className="bg-white text-kaist-blue text-xl px-12 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 mx-auto hover:bg-gray-50 transition-colors"
-            >
-              <Sparkles className="w-6 h-6" />
-              <span>간편하게 시작하기</span>
-              <ArrowRight className="w-6 h-6" />
-            </motion.button>
+            <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-xl border border-gray-100 dark:border-gray-700 max-w-md mx-auto">
+              <div className="flex items-center justify-center space-x-4">
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">이메일</p>
+                  <a 
+                    href="mailto:dhlee4832@kaist.ac.kr"
+                    className="text-lg font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                  >
+                    dhlee4832@kaist.ac.kr
+                  </a>
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>
