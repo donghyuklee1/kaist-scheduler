@@ -124,7 +124,7 @@ const Dashboard = ({
       </motion.div>
 
       {/* 메인 컨텐츠 그리드 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* 왼쪽: 축소된 캘린더 */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -132,15 +132,15 @@ const Dashboard = ({
           transition={{ delay: 0.1 }}
           className="lg:col-span-1"
         >
-          <div className="glass-effect rounded-2xl p-6 shadow-xl">
+          <div className="glass-effect rounded-2xl p-4 md:p-6 shadow-xl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
-                <CalendarIcon className="w-5 h-5 mr-2 text-kaist-blue" />
+              <h2 className="text-lg md:text-xl font-bold text-gray-800 dark:text-white flex items-center">
+                <CalendarIcon className="w-4 h-4 md:w-5 md:h-5 mr-2 text-kaist-blue" />
                 이번 주
               </h2>
               <button
                 onClick={() => onViewChange('schedule')}
-                className="text-sm text-kaist-blue hover:text-kaist-lightblue transition-colors"
+                className="text-xs md:text-sm text-kaist-blue hover:text-kaist-lightblue transition-colors"
               >
                 전체 보기
               </button>

@@ -18,16 +18,16 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
       transition={{ duration: 0.6 }}
       className="sticky top-0 z-50 glass-effect border-b border-white/20"
     >
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-4 py-3 md:py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Title */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setView('calendar')}
-            className="flex items-center space-x-3 cursor-pointer"
+            className="flex items-center space-x-2 md:space-x-3 cursor-pointer"
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center">
               <img 
                 src="/Adobe Express - file.png" 
                 alt="Compendium Logo" 
@@ -39,17 +39,17 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
                 }}
               />
               <div className="w-full h-full bg-gradient-to-br from-kaist-blue to-kaist-lightblue rounded-xl flex items-center justify-center hidden">
-                <CalendarIcon className="w-6 h-6 text-white" />
+                <CalendarIcon className="w-4 h-4 md:w-6 md:h-6 text-white" />
               </div>
             </div>
-                <div className="text-left">
-                  <h1 className="text-2xl font-bold text-kaist-blue leading-tight">Compendium</h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-tight">간편한 일정 관리</p>
-                </div>
+            <div className="text-left">
+              <h1 className="text-lg md:text-2xl font-bold text-kaist-blue leading-tight">Compendium</h1>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 leading-tight hidden sm:block">간편한 일정 관리</p>
+            </div>
           </motion.button>
 
-          {/* View Toggle */}
-          <div className="flex items-center space-x-2">
+          {/* View Toggle - Hidden on mobile, shown on tablet+ */}
+          <div className="hidden md:flex items-center space-x-2">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -93,15 +93,57 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
             </motion.button>
           </div>
 
+          {/* Mobile Navigation Menu */}
+          <div className="md:hidden flex items-center space-x-1">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setView('calendar')}
+              className={`p-2 rounded-lg transition-all duration-300 ${
+                view === 'calendar'
+                  ? 'bg-kaist-blue text-white'
+                  : 'bg-white text-gray-600'
+              }`}
+            >
+              <CalendarIcon className="w-5 h-5" />
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setView('schedule')}
+              className={`p-2 rounded-lg transition-all duration-300 ${
+                view === 'schedule'
+                  ? 'bg-kaist-blue text-white'
+                  : 'bg-white text-gray-600'
+              }`}
+            >
+              <span className="text-lg">📋</span>
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setView('meetings')}
+              className={`p-2 rounded-lg transition-all duration-300 ${
+                view === 'meetings'
+                  ? 'bg-kaist-blue text-white'
+                  : 'bg-white text-gray-600'
+              }`}
+            >
+              <Users className="w-5 h-5" />
+            </motion.button>
+          </div>
+
           {/* Action Buttons */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 md:space-x-3">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowNotificationModal(true)}
-              className="relative p-3 bg-white dark:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-kaist-blue dark:hover:text-blue-400"
+              className="relative p-2 md:p-3 bg-white dark:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-kaist-blue dark:hover:text-blue-400"
             >
-              <Bell className="w-5 h-5" />
+              <Bell className="w-4 h-4 md:w-5 md:h-5" />
               {/* 읽지 않은 알림 개수 표시 */}
               {(() => {
                 const unreadCount = meetings.reduce((count, meeting) => {
@@ -117,7 +159,7 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                    className="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold"
                   >
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </motion.div>
@@ -130,19 +172,19 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleDarkMode}
-              className="p-3 bg-white dark:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-kaist-blue dark:hover:text-blue-400"
+              className="p-2 md:p-3 bg-white dark:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-kaist-blue dark:hover:text-blue-400"
             >
-              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              {isDarkMode ? <Sun className="w-4 h-4 md:w-5 md:h-5" /> : <Moon className="w-4 h-4 md:w-5 md:h-5" />}
             </motion.button>
             
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onAddEvent}
-              className="btn-primary flex items-center space-x-2"
+              className="btn-primary flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-2 md:py-3"
             >
               <Plus className="w-4 h-4" />
-              <span>일정 추가</span>
+              <span className="hidden sm:inline">일정 추가</span>
             </motion.button>
 
             {/* 사용자 프로필 또는 로그인 버튼 */}

@@ -10,6 +10,26 @@
   body {
     @apply bg-gradient-to-br from-kaist-gray to-white dark:from-gray-900 dark:to-gray-800 text-kaist-darkgray dark:text-gray-100 font-sans;
     min-height: 100vh;
+    /* 모바일 터치 최적화 */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* 모바일에서 텍스트 선택 허용 */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+  
+  /* 모바일 스크롤 최적화 */
+  * {
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -24,10 +44,18 @@
   
   .btn-primary {
     @apply bg-kaist-blue text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:bg-kaist-lightblue hover:shadow-lg active:scale-95;
+    /* 모바일 터치 최적화 */
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
   }
   
   .btn-secondary {
     @apply bg-white dark:bg-gray-700 text-kaist-blue dark:text-gray-200 border-2 border-kaist-blue dark:border-gray-600 px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:bg-kaist-blue dark:hover:bg-gray-600 hover:text-white dark:hover:text-white hover:shadow-lg active:scale-95;
+    /* 모바일 터치 최적화 */
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
   }
   
   .input-field {
@@ -39,5 +67,42 @@
       linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
       linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
     background-size: 20px 20px;
+  }
+  
+  /* 모바일 전용 스타일 */
+  .mobile-optimized {
+    @apply min-h-[44px] min-w-[44px] touch-manipulation;
+  }
+  
+  .mobile-text {
+    @apply text-sm md:text-base;
+  }
+  
+  .mobile-padding {
+    @apply p-3 md:p-4 lg:p-6;
+  }
+  
+  .mobile-spacing {
+    @apply space-y-3 md:space-y-4 lg:space-y-6;
+  }
+}
+
+/* 모바일 전용 미디어 쿼리 */
+@media (max-width: 768px) {
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+  }
+  
+  .mobile-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  
+  .mobile-flex {
+    flex-direction: column;
+  }
+  
+  .mobile-hidden {
+    display: none;
   }
 }
