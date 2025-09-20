@@ -17,7 +17,7 @@ const Calendar = ({ selectedDate, setSelectedDate, events, onEventClick, onDateC
   let days = []
   let day = startDate
 
-  const getEventsForDate = (date) => {
+  const getEventsForCalendarDate = (date) => {
     return events.filter(event => 
       isSameDay(new Date(event.date), date)
     )
@@ -33,7 +33,7 @@ const Calendar = ({ selectedDate, setSelectedDate, events, onEventClick, onDateC
 
   while (day <= endDate) {
     for (let i = 0; i < 7; i++) {
-      const dayEvents = getEventsForDate(day)
+      const dayEvents = getEventsForCalendarDate(day)
       const isCurrentMonth = isSameMonth(day, monthStart)
       const isSelected = isSameDay(day, selectedDate)
       const isToday = isSameDay(day, new Date())
@@ -159,7 +159,7 @@ const Calendar = ({ selectedDate, setSelectedDate, events, onEventClick, onDateC
           </h3>
           
           <div className="space-y-2">
-            {getEventsForDate(selectedDate).map((event) => (
+            {getEventsForCalendarDate(selectedDate).map((event) => (
               <motion.div
                 key={event.id}
                 whileHover={{ scale: 1.02 }}
@@ -197,7 +197,7 @@ const Calendar = ({ selectedDate, setSelectedDate, events, onEventClick, onDateC
               </motion.div>
             ))}
             
-            {getEventsForDate(selectedDate).length === 0 && (
+            {getEventsForCalendarDate(selectedDate).length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p>이 날짜에는 일정이 없습니다</p>
