@@ -198,6 +198,11 @@ export const updateParticipantStatus = async (meetingId, userId, newStatus) => {
 // 가용성 업데이트
 export const updateAvailability = async (meetingId, userId, timeSlotIds) => {
   try {
+    // timeSlotIds가 배열인지 확인
+    if (!Array.isArray(timeSlotIds)) {
+      throw new Error('timeSlotIds는 배열이어야 합니다')
+    }
+    
     const meetingRef = doc(db, COLLECTIONS.MEETINGS, meetingId)
     await updateDoc(meetingRef, {
       [`availability.${userId}`]: timeSlotIds,

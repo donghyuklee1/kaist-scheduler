@@ -40,11 +40,13 @@ const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, 
 
   // 현재 사용자의 가용성 초기화
   useEffect(() => {
-    if (meeting && currentUser && currentUser.uid && meeting.availability[currentUser.uid]) {
-      const userAvailability = meeting.availability[currentUser.uid] || []
+    if (meeting && currentUser && currentUser.uid && meeting.availability && meeting.availability[currentUser.uid]) {
+      const userAvailability = meeting.availability[currentUser.uid]
+      // 배열인지 확인하고, 아니면 빈 배열로 설정
+      const availabilityArray = Array.isArray(userAvailability) ? userAvailability : []
       // 기존 데이터를 가능한 시간과 불가능한 시간으로 분리
       // 현재는 모든 선택된 슬롯을 가능한 시간으로 간주
-      setAvailableSlots(userAvailability)
+      setAvailableSlots(availabilityArray)
       setUnavailableSlots([])
     }
   }, [meeting, currentUser])
@@ -91,8 +93,10 @@ const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, 
       setAvailableSlots(newAvailableSlots)
       setUnavailableSlots(newUnavailableSlots)
       
-      // 전체 선택된 슬롯을 부모에게 전달
-      onAvailabilityChange(newAvailableSlots)
+      // 전체 선택된 슬롯을 부모에게 전달 (배열인지 확인)
+      if (Array.isArray(newAvailableSlots)) {
+        onAvailabilityChange(newAvailableSlots)
+      }
     } else {
       // 불가능한 시간 모드
       const newUnavailableSlots = unavailableSlots.includes(fullSlotId)
@@ -105,8 +109,10 @@ const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, 
       setAvailableSlots(newAvailableSlots)
       setUnavailableSlots(newUnavailableSlots)
       
-      // 가능한 시간만 부모에게 전달
-      onAvailabilityChange(newAvailableSlots)
+      // 가능한 시간만 부모에게 전달 (배열인지 확인)
+      if (Array.isArray(newAvailableSlots)) {
+        onAvailabilityChange(newAvailableSlots)
+      }
     }
   }
 

@@ -105,7 +105,6 @@ function App() {
   }
 
   const handleBuildingClick = (building) => {
-    setSelectedBuilding(building)
     // 건물 정보와 함께 새 이벤트 모달 열기
     openEventModal({ 
       buildingId: building.id,
@@ -175,6 +174,12 @@ function App() {
     // 로그인하지 않은 사용자는 시간 조율 불가
     if (!user || !user.uid) {
       alert('시간 조율을 하려면 로그인이 필요합니다.')
+      return
+    }
+    
+    // timeSlotIds가 배열인지 확인
+    if (!Array.isArray(timeSlotIds)) {
+      console.error('timeSlotIds는 배열이어야 합니다:', timeSlotIds)
       return
     }
     
