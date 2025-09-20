@@ -11,6 +11,8 @@ import TimeCoordination from './components/TimeCoordination'
 import MeetingDetails from './components/MeetingDetails'
 import LoginModal from './components/LoginModal'
 import UserProfile from './components/UserProfile'
+import ProfilePage from './components/ProfilePage'
+import SettingsPage from './components/SettingsPage'
 import Footer from './components/Footer'
 import { Calendar as CalendarIcon, Grid, Users } from 'lucide-react'
 import { getBuildingById } from './data/buildings'
@@ -33,7 +35,7 @@ import {
 
 function App() {
   const { user, loading } = useAuth()
-  const [view, setView] = useState('calendar') // 'calendar', 'schedule', 'campus', 'meetings'
+  const [view, setView] = useState('calendar') // 'calendar', 'schedule', 'campus', 'meetings', 'profile', 'settings'
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [events, setEvents] = useState([])
   const [meetings, setMeetings] = useState([])
@@ -223,6 +225,8 @@ function App() {
             onAddEvent={() => openEventModal()}
             onLogin={() => setIsLoginModalOpen(true)}
             meetings={meetings}
+            onNavigateToProfile={() => setView('profile')}
+            onNavigateToSettings={() => setView('settings')}
           />
       
       <main className="container mx-auto px-4 py-8 flex-1">
@@ -276,7 +280,11 @@ function App() {
                         onJoinMeeting={joinMeeting}
                       />
                     )
-              ) : null}
+                  ) : view === 'profile' ? (
+                    <ProfilePage onBack={() => setView('calendar')} />
+                  ) : view === 'settings' ? (
+                    <SettingsPage onBack={() => setView('calendar')} />
+                  ) : null}
         </motion.div>
       </main>
 

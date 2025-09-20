@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import UserProfile from './UserProfile'
 import NotificationModal from './NotificationModal'
 
-const Header = ({ view, setView, onAddEvent, onLogin, meetings = [] }) => {
+const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateToProfile, onNavigateToSettings }) => {
   const [isDarkMode, toggleDarkMode] = useDarkMode()
   const { user } = useAuth()
   const [showNotificationModal, setShowNotificationModal] = useState(false)
@@ -112,7 +112,10 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [] }) => {
 
             {/* 사용자 프로필 또는 로그인 버튼 */}
             {user ? (
-              <UserProfile meetings={meetings} />
+              <UserProfile 
+                onNavigateToProfile={onNavigateToProfile}
+                onNavigateToSettings={onNavigateToSettings}
+              />
             ) : (
               <motion.button
                 whileHover={{ scale: 1.05 }}
