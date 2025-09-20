@@ -30,11 +30,11 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
     return userAvailability && userAvailability.length > 0
   }
 
-  // 기본 탭 설정: 시간 조율 완료 시 세부사항 탭, 미완료 시 시간표 탭
+  // 기본 탭 설정: 시간 조율 완료 시 시간표 탭, 미완료 시 시간 조율 탭
   const getDefaultTab = () => {
     if (!canViewSchedule) return 'announcements'
     if (hasCompletedTimeCoordination()) return 'schedule'
-    return 'schedule'
+    return 'timeCoordination'
   }
 
   const [activeTab, setActiveTab] = useState(getDefaultTab())
