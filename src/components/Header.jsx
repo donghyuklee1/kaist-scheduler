@@ -43,7 +43,9 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
               </div>
             </div>
             <div className="text-left">
-              <h1 className="text-lg md:text-2xl font-bold text-kaist-blue leading-tight">Compendium</h1>
+              <h1 className="text-lg md:text-2xl font-bold text-kaist-blue leading-tight">
+                Compendium<span className="text-green-500 text-xs md:text-sm align-super">β</span>
+              </h1>
               <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 leading-tight hidden sm:block">간편한 일정 관리</p>
             </div>
           </motion.button>

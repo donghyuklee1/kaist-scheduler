@@ -254,7 +254,7 @@ const LandingPage = ({ onGetStarted }) => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="mb-8"
             >
-              <div className="w-40 h-40 mx-auto mb-4">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 mx-auto mb-4">
                 <img 
                   src="/Adobe Express - file.png" 
                   alt="Compendium Logo" 
@@ -269,13 +269,13 @@ const LandingPage = ({ onGetStarted }) => {
                   <Calendar className="w-10 h-10 text-white" />
                 </div>
               </div>
-              <h1 className="text-6xl font-bold text-gray-900 dark:text-white mb-4">
-                Compendium<span className="text-green-500 text-2xl align-super">β</span>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4">
+                Compendium<span className="text-green-500 text-sm sm:text-lg md:text-xl lg:text-2xl align-super">β</span>
               </h1>
-              <p className="text-xl text-gray-600 dark:text-gray-300 mb-2">
+              <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-2">
                 간편한 일정 관리
               </p>
-              <p className="text-lg text-gray-500 dark:text-gray-400">
+              <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400">
                 KAIST 구성원을 위한 스마트한 일정 관리 플랫폼
               </p>
             </motion.div>
@@ -288,15 +288,15 @@ const LandingPage = ({ onGetStarted }) => {
               className="mb-16"
             >
               <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 text-center shadow-2xl border border-gray-100 dark:border-gray-700">
-                <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">지금 바로 시작해보세요!</h2>
-                <p className="text-lg mb-6 text-gray-600 dark:text-gray-300">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-900 dark:text-white">지금 바로 시작해보세요!</h2>
+                <p className="text-base sm:text-lg mb-6 text-gray-600 dark:text-gray-300">
                   간편한 로그인으로 모든 기능을 무료로 이용하실 수 있습니다
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={onGetStarted}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-semibold text-lg flex items-center space-x-3 mx-auto shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold text-base sm:text-lg flex items-center space-x-2 sm:space-x-3 mx-auto shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   <Sparkles className="w-5 h-5" />
                   <span>간편하게 시작하기</span>
@@ -319,10 +319,10 @@ const LandingPage = ({ onGetStarted }) => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               주요 기능
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">
+            <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300">
               Compendium이 제공하는 강력한 기능들을 만나보세요
             </p>
           </motion.div>
@@ -362,10 +362,10 @@ const LandingPage = ({ onGetStarted }) => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               왜 Compendium을 선택해야 할까요?
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">
+            <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300">
               KAIST 구성원을 위해 특별히 설계된 기능들
             </p>
           </motion.div>
@@ -400,10 +400,10 @@ const LandingPage = ({ onGetStarted }) => {
             viewport={{ once: true }}
             className="text-center"
           >
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               문의사항이 있으신가요?
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
               서비스 개선이나 버그 신고, 새로운 기능 제안 등 언제든지 연락주세요
             </p>
             <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-xl border border-gray-100 dark:border-gray-700 max-w-md mx-auto">
