@@ -75,47 +75,18 @@ const CampusMap = ({ onBuildingClick, selectedBuilding, events = [] }) => {
             animate={{ opacity: 1, scale: 1 }}
             className="glass-effect rounded-2xl p-6 relative overflow-hidden"
           >
-            <div className="relative w-full h-[600px] rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 via-green-50 to-purple-50">
-              {/* 캠퍼스맵 배경 디자인 */}
+            <div className="relative w-full h-[600px] rounded-xl overflow-hidden bg-gray-100">
+              {/* 실제 KAIST 캠퍼스맵 이미지 */}
               <div className="absolute inset-0">
-                {/* 주요 도로 (가로) */}
-                <div className="absolute top-1/2 left-0 right-0 h-4 bg-gray-400/70 transform -translate-y-1/2"></div>
-                <div className="absolute top-1/4 left-0 right-0 h-2 bg-gray-300/50"></div>
-                <div className="absolute top-3/4 left-0 right-0 h-2 bg-gray-300/50"></div>
-                
-                {/* 주요 도로 (세로) */}
-                <div className="absolute left-1/2 top-0 bottom-0 w-4 bg-gray-400/70 transform -translate-x-1/2"></div>
-                <div className="absolute left-1/4 top-0 bottom-0 w-2 bg-gray-300/50"></div>
-                <div className="absolute left-3/4 top-0 bottom-0 w-2 bg-gray-300/50"></div>
-                
-                {/* 보조 도로들 */}
-                <div className="absolute top-1/6 left-0 right-0 h-1 bg-gray-200/40"></div>
-                <div className="absolute top-5/6 left-0 right-0 h-1 bg-gray-200/40"></div>
-                <div className="absolute left-1/6 top-0 bottom-0 w-1 bg-gray-200/40"></div>
-                <div className="absolute left-5/6 top-0 bottom-0 w-1 bg-gray-200/40"></div>
-                
-                {/* 녹지 공간들 */}
-                <div className="absolute top-8 left-8 w-24 h-24 bg-green-300/40 rounded-full"></div>
-                <div className="absolute top-16 right-16 w-20 h-20 bg-green-300/40 rounded-full"></div>
-                <div className="absolute bottom-16 left-16 w-28 h-28 bg-green-300/40 rounded-full"></div>
-                <div className="absolute bottom-8 right-8 w-22 h-22 bg-green-300/40 rounded-full"></div>
-                
-                {/* 중앙 연못/광장 */}
-                <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-blue-300/50 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
-                
-                {/* 건물 구역 배경 */}
-                <div className="absolute top-0 left-0 w-full h-1/3 bg-red-100/30"></div>
-                <div className="absolute top-1/3 left-0 w-full h-1/3 bg-blue-100/30"></div>
-                <div className="absolute bottom-0 left-0 w-full h-1/3 bg-green-100/30"></div>
-                
-                {/* 그리드 패턴 */}
-                <div className="absolute inset-0 opacity-20" style={{
-                  backgroundImage: `
-                    linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)
-                  `,
-                  backgroundSize: '20px 20px'
-                }}></div>
+                <img 
+                  src="/kaist-campus-map.png" 
+                  alt="KAIST Campus Map" 
+                  className="w-full h-full object-contain"
+                  style={{ 
+                    objectFit: 'contain',
+                    objectPosition: 'center'
+                  }}
+                />
               </div>
               
               {/* 건물들 */}
@@ -161,9 +132,16 @@ const CampusMap = ({ onBuildingClick, selectedBuilding, events = [] }) => {
                             ? 'border-white shadow-xl' 
                             : 'border-white shadow-lg'
                       }`}
-                      style={{ backgroundColor: typeInfo.color }}
+                      style={{ 
+                        backgroundColor: typeInfo.color,
+                        boxShadow: isSelected 
+                          ? '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3)' 
+                          : isHovered 
+                            ? '0 0 15px rgba(0,0,0,0.4), 0 0 30px rgba(0,0,0,0.2)' 
+                            : '0 0 10px rgba(0,0,0,0.3), 0 0 20px rgba(0,0,0,0.1)'
+                      }}
                       >
-                        <div className="absolute inset-0 flex items-center justify-center text-white text-sm font-bold">
+                        <div className="absolute inset-0 flex items-center justify-center text-white text-sm font-bold drop-shadow-lg">
                           {building.id}
                         </div>
                       </div>
@@ -206,7 +184,7 @@ const CampusMap = ({ onBuildingClick, selectedBuilding, events = [] }) => {
               })}
               
               {/* 범례 */}
-              <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-xl border border-white/20">
+              <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-md rounded-xl p-4 shadow-xl border border-white/30">
                 <h4 className="text-sm font-semibold text-gray-800 mb-3 flex items-center space-x-2">
                   <span>🏢</span>
                   <span>건물 타입</span>
@@ -215,7 +193,7 @@ const CampusMap = ({ onBuildingClick, selectedBuilding, events = [] }) => {
                   {Object.entries(buildingTypes).slice(0, 8).map(([type, info]) => (
                     <div key={type} className="flex items-center space-x-2 text-xs">
                       <div 
-                        className="w-4 h-4 rounded-full border border-gray-300" 
+                        className="w-4 h-4 rounded-full border-2 border-white shadow-md" 
                         style={{ backgroundColor: info.color }}
                       ></div>
                       <span className="text-gray-700 font-medium">{info.label}</span>
@@ -225,7 +203,7 @@ const CampusMap = ({ onBuildingClick, selectedBuilding, events = [] }) => {
               </div>
               
               {/* 나침반 */}
-              <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-xl border border-white/20">
+              <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md rounded-xl p-3 shadow-xl border border-white/30">
                 <div className="text-center">
                   <div className="w-8 h-8 mx-auto mb-1 flex items-center justify-center">
                     <span className="text-lg">🧭</span>
