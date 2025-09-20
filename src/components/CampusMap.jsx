@@ -79,7 +79,7 @@ const CampusMap = ({ onBuildingClick, selectedBuilding, events = [] }) => {
               {/* 실제 KAIST 캠퍼스맵 이미지 */}
               <div className="absolute inset-0">
                 <img 
-                  src="/kaist-campus-map.png" 
+                  src="/SCR-20250921-blps.jpeg" 
                   alt="KAIST Campus Map" 
                   className="w-full h-full object-contain"
                   style={{ 
