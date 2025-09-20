@@ -2,6 +2,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react'
 import { motion } from 'framer-motion'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import LandingPage from './components/LandingPage'
 
 // 동적 import를 사용한 지연 로딩
 const Calendar = lazy(() => import('./components/Calendar'))
@@ -260,6 +261,15 @@ function App() {
           <p className="mt-4 text-gray-600 dark:text-gray-300">로딩 중...</p>
         </motion.div>
       </div>
+    )
+  }
+
+  // 로그인하지 않은 사용자에게는 랜딩 페이지 표시
+  if (!user) {
+    return (
+      <LandingPage 
+        onGetStarted={() => setIsLoginModalOpen(true)} 
+      />
     )
   }
 
