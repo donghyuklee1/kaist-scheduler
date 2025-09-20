@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Calendar, Clock, Users, MapPin, CheckCircle, XCircle, BarChart3, Bell, Settings, Plus, Trash2, Edit3 } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, Users, MapPin, CheckCircle, XCircle, BarChart3, Bell, Settings, Plus, Trash2, Edit3, User, Mail } from 'lucide-react'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { addAnnouncement, deleteAnnouncement, isMeetingOwner, getParticipantsCountForSlot } from '../services/firestoreService'
@@ -118,8 +118,12 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
       await addAnnouncement(meeting.id, announcementForm, currentUser.uid)
       setAnnouncementForm({ title: '', content: '', priority: 'normal' })
       setShowAnnouncementModal(false)
+      
+      // 성공 메시지
+      alert('공지사항이 성공적으로 등록되었습니다!')
     } catch (error) {
-      alert(error.message)
+      console.error('공지사항 추가 실패:', error)
+      alert('공지사항 등록에 실패했습니다: ' + error.message)
     }
   }
 
@@ -198,6 +202,131 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
+        {/* 모임 정보 카드 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="glass-effect rounded-2xl p-6 shadow-xl mb-6"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 기본 정보 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">모임 정보</h3>
+              
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                    <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">모임 유형</p>
+                    <p className="font-medium text-gray-800 dark:text-white capitalize">
+                      {meeting?.type || 'study'}
+                    </p>
+                  </div>
+                </div>
+                
+                {meeting?.location && (
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                      <MapPin className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">장소</p>
+                      <p className="font-medium text-gray-800 dark:text-white">
+                        {meeting.location}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+                    <Users className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">참여자 수</p>
+                    <p className="font-medium text-gray-800 dark:text-white">
+                      {meeting?.participants?.length || 0}명
+                      {meeting?.maxParticipants && ` / ${meeting.maxParticipants}명`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* 담당자 정보 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">담당자 정보</h3>
+              
+              <div className="space-y-3">
+                {meeting?.organizer ? (
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
+                      <User className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">담당자</p>
+                      <p className="font-medium text-gray-800 dark:text-white">
+                        {meeting.organizer}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                      <User className="w-4 h-4 text-gray-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">담당자</p>
+                      <p className="font-medium text-gray-500 dark:text-gray-400">
+                        정보 없음
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
+                {meeting?.organizerContact ? (
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-teal-100 dark:bg-teal-900/20 rounded-lg flex items-center justify-center">
+                      <Mail className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">연락처</p>
+                      <p className="font-medium text-gray-800 dark:text-white">
+                        {meeting.organizerContact}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                      <Mail className="w-4 h-4 text-gray-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">연락처</p>
+                      <p className="font-medium text-gray-500 dark:text-gray-400">
+                        정보 없음
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* 모임 설명 */}
+          {meeting?.description && (
+            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <h4 className="text-md font-semibold text-gray-800 dark:text-white mb-3">모임 설명</h4>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                {meeting.description}
+              </p>
+            </div>
+          )}
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

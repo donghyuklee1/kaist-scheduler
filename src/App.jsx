@@ -80,6 +80,14 @@ function App() {
     const unsubscribeMeetings = subscribeToMeetings((meetingsData) => {
       console.log('App.jsx - 모임 데이터 업데이트:', meetingsData.length, '개')
       setMeetings(meetingsData)
+      
+      // 현재 선택된 모임이 있다면 최신 데이터로 업데이트
+      if (selectedMeeting) {
+        const updatedMeeting = meetingsData.find(m => m.id === selectedMeeting.id)
+        if (updatedMeeting) {
+          setSelectedMeeting(updatedMeeting)
+        }
+      }
     })
 
     // 사용자 이벤트 구독 (로그인한 사용자만)
