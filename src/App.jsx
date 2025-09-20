@@ -13,7 +13,7 @@ const MeetingList = lazy(() => import('./components/MeetingList'))
 const MeetingModal = lazy(() => import('./components/MeetingModal'))
 const TimeCoordination = lazy(() => import('./components/TimeCoordination'))
 const MeetingDetails = lazy(() => import('./components/MeetingDetails'))
-const LoginModal = lazy(() => import('./components/LoginModal'))
+const LoginPage = lazy(() => import('./components/LoginPage'))
 const ProfilePage = lazy(() => import('./components/ProfilePage'))
 const SettingsPage = lazy(() => import('./components/SettingsPage'))
 import { Calendar as CalendarIcon, Grid, Users } from 'lucide-react'
@@ -52,7 +52,7 @@ function App() {
   const [meetings, setMeetings] = useState([])
   const [isEventModalOpen, setIsEventModalOpen] = useState(false)
   const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false)
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [showLoginPage, setShowLoginPage] = useState(false)
   const [editingEvent, setEditingEvent] = useState(null)
   const [editingMeeting, setEditingMeeting] = useState(null)
   const [selectedMeeting, setSelectedMeeting] = useState(null)
@@ -268,18 +268,16 @@ function App() {
   if (!user) {
     return (
       <>
-        <LandingPage 
-          onGetStarted={() => setIsLoginModalOpen(true)} 
-        />
-        
-        {/* 로그인 모달 */}
-        {isLoginModalOpen && (
+        {showLoginPage ? (
           <Suspense fallback={<LoadingSpinner />}>
-            <LoginModal
-              isOpen={isLoginModalOpen}
-              onClose={() => setIsLoginModalOpen(false)}
+            <LoginPage
+              onBack={() => setShowLoginPage(false)}
             />
           </Suspense>
+        ) : (
+          <LandingPage 
+            onGetStarted={() => setShowLoginPage(true)} 
+          />
         )}
         
         {/* Firebase 설정 알림 */}
@@ -297,7 +295,7 @@ function App() {
             view={view}
             setView={setView}
             onAddEvent={() => openEventModal()}
-            onLogin={() => setIsLoginModalOpen(true)}
+            onLogin={() => setShowLoginPage(true)}
             meetings={meetings}
             onNavigateToProfile={() => setView('profile')}
             onNavigateToSettings={() => setView('settings')}
@@ -389,11 +387,10 @@ function App() {
         </Suspense>
       )}
 
-      {isLoginModalOpen && (
+      {showLoginPage && (
         <Suspense fallback={<LoadingSpinner />}>
-          <LoginModal
-            isOpen={isLoginModalOpen}
-            onClose={() => setIsLoginModalOpen(false)}
+          <LoginPage
+            onBack={() => setShowLoginPage(false)}
           />
         </Suspense>
       )}
