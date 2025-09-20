@@ -494,11 +494,11 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
               <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                 {/* Header */}
                 <div className="grid grid-cols-6 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-                  <div className="p-4 text-center font-medium text-gray-500 dark:text-gray-400">
+                  <div className="p-4 text-center font-medium text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-600">
                     시간
                   </div>
                   {weekDays.map((day, index) => (
-                    <div key={day} className="p-4 text-center border-l border-gray-200 dark:border-gray-600">
+                    <div key={day} className="p-4 text-center border-r border-gray-200 dark:border-gray-600 last:border-r-0">
                       <div className="font-medium text-gray-800 dark:text-gray-200">{day}</div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">{weekDates[index]}</div>
                     </div>
@@ -520,7 +520,7 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                         return (
                           <div
                             key={dayIndex}
-                            className={`p-3 border-r border-gray-200 dark:border-gray-600 text-center text-xs font-medium ${getSlotColor(dayIndex, slot.id)}`}
+                            className={`p-3 text-center text-xs font-medium border-r border-gray-200 dark:border-gray-600 last:border-r-0 ${getSlotColor(dayIndex, slot.id)}`}
                           >
                             {count > 0 && count}
                           </div>
