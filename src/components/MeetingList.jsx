@@ -37,6 +37,15 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
     if (isParticipant(meeting) || isOwner(meeting)) return false
     if (meeting.status !== 'open') return false
     if (meeting.maxParticipants && meeting.participants?.length >= meeting.maxParticipants) return false
+    
+    // 공개 범위 확인
+    if (meeting.visibility === 'invite') return false // 초대 전용은 참가 불가
+    if (meeting.visibility === 'kaist') {
+      // KAIST 구성원만 - 이메일 도메인 확인
+      const userEmail = currentUser?.email || ''
+      if (!userEmail.includes('@kaist.ac.kr')) return false
+    }
+    
     return true
   }
 
@@ -278,7 +287,7 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
                       <span className={`text-sm font-medium ${
                         canJoin(meeting) ? 'text-green-600 dark:text-green-400' : 'text-gray-500'
                       }`}>
-                        {canJoin(meeting) ? '신청 가능' : isParticipant(meeting) ? '참여중' : '신청 불가'}
+                        {canJoin(meeting) ? '참가 신청 가능' : isParticipant(meeting) ? '참여중' : '참가 불가'}
                       </span>
                     </div>
                   </div>
