@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, Calendar, Clock, MapPin, Users, Tag, Save, Building, UserPlus, Search } from 'lucide-react'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
-import { meetingTypes, createMeeting } from '../data/meetings'
+import { meetingTypes } from '../data/meetings'
 import { allBuildings, getBuildingById, buildingTypes } from '../data/buildings'
 
 const MeetingModal = ({ meeting, onSave, onClose, currentUser }) => {
@@ -78,12 +78,10 @@ const MeetingModal = ({ meeting, onSave, onClose, currentUser }) => {
 
     const meetingData = {
       ...formData,
-      owner: currentUser.uid,
       maxParticipants: formData.maxParticipants ? parseInt(formData.maxParticipants) : null
     }
 
-    const newMeeting = createMeeting(meetingData)
-    onSave(newMeeting)
+    onSave(meetingData)
   }
 
   const handleBuildingChange = (buildingId) => {

@@ -95,18 +95,27 @@ export const subscribeToMeetings = (callback) => {
   )
 
   return onSnapshot(q, (snapshot) => {
-    const meetings = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }))
+    console.log('모임 데이터 변경 감지:', snapshot.docs.length, '개 모임')
+    const meetings = snapshot.docs.map(doc => {
+      const data = doc.data()
+      console.log('모임 데이터:', { id: doc.id, title: data.title, createdAt: data.createdAt })
+      return {
+        id: doc.id,
+        ...data
+      }
+    })
     callback(meetings)
+  }, (error) => {
+    console.error('모임 구독 오류:', error)
   })
 }
 
 // 모임 생성
 export const createMeeting = async (meetingData, userId) => {
   try {
-    const docRef = await addDoc(collection(db, COLLECTIONS.MEETINGS), {
+    console.log('모임 생성 시작:', { meetingData, userId })
+    
+    const meetingDoc = {
       ...meetingData,
       owner: userId,
       createdAt: serverTimestamp(),
@@ -118,7 +127,12 @@ export const createMeeting = async (meetingData, userId) => {
       }],
       availability: {},
       announcements: []
-    })
+    }
+    
+    console.log('저장할 모임 데이터:', meetingDoc)
+    
+    const docRef = await addDoc(collection(db, COLLECTIONS.MEETINGS), meetingDoc)
+    console.log('모임 생성 성공, ID:', docRef.id)
     return docRef.id
   } catch (error) {
     console.error('모임 생성 실패:', error)

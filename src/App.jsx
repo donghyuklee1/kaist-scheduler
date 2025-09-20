@@ -121,11 +121,13 @@ function App() {
   // 모임 관련 함수들
   const addMeeting = async (meetingData) => {
     try {
-      await createMeetingInFirestore(meetingData, user.uid)
+      console.log('App.jsx - 모임 생성 시작:', { meetingData, userId: user.uid })
+      const meetingId = await createMeetingInFirestore(meetingData, user.uid)
+      console.log('App.jsx - 모임 생성 완료, ID:', meetingId)
       closeMeetingModal()
     } catch (error) {
-      console.error('모임 생성 실패:', error)
-      alert('모임 생성에 실패했습니다.')
+      console.error('App.jsx - 모임 생성 실패:', error)
+      alert('모임 생성에 실패했습니다: ' + error.message)
     }
   }
 
