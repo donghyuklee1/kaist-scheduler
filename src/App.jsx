@@ -267,9 +267,27 @@ function App() {
   // 로그인하지 않은 사용자에게는 랜딩 페이지 표시
   if (!user) {
     return (
-      <LandingPage 
-        onGetStarted={() => setIsLoginModalOpen(true)} 
-      />
+      <>
+        <LandingPage 
+          onGetStarted={() => setIsLoginModalOpen(true)} 
+        />
+        
+        {/* 로그인 모달 */}
+        {isLoginModalOpen && (
+          <Suspense fallback={<LoadingSpinner />}>
+            <LoginModal
+              isOpen={isLoginModalOpen}
+              onClose={() => setIsLoginModalOpen(false)}
+            />
+          </Suspense>
+        )}
+        
+        {/* Firebase 설정 알림 */}
+        <FirebaseSetupAlert
+          isVisible={showFirebaseSetupAlert}
+          onClose={() => setShowFirebaseSetupAlert(false)}
+        />
+      </>
     )
   }
 
