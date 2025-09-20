@@ -11,6 +11,7 @@ const Dashboard = ({
   meetings, 
   onEventClick, 
   onDateClick,
+  onViewChange,
   currentUser 
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -128,7 +129,7 @@ const Dashboard = ({
                 이번 주
               </h2>
               <button
-                onClick={() => onDateClick(selectedDate)}
+                onClick={() => onViewChange('schedule')}
                 className="text-sm text-kaist-blue hover:text-kaist-lightblue transition-colors"
               >
                 전체 보기

@@ -237,20 +237,21 @@ function App() {
           transition={{ duration: 0.5 }}
           className="glass-effect rounded-2xl p-6 shadow-xl"
         >
-              {view === 'calendar' ? (
-                <Dashboard
-                  selectedDate={selectedDate}
-                  setSelectedDate={setSelectedDate}
-                  events={events}
-                  meetings={meetings}
-                  onEventClick={openEventModal}
-                  onDateClick={(date) => {
-                    setSelectedDate(date)
-                    openEventModal({ date })
-                  }}
-                  currentUser={user}
-                />
-              ) : view === 'schedule' ? (
+                  {view === 'calendar' ? (
+                    <Dashboard
+                      selectedDate={selectedDate}
+                      setSelectedDate={setSelectedDate}
+                      events={events}
+                      meetings={meetings}
+                      onEventClick={openEventModal}
+                      onDateClick={(date) => {
+                        setSelectedDate(date)
+                        openEventModal({ date })
+                      }}
+                      onViewChange={setView}
+                      currentUser={user}
+                    />
+                  ) : view === 'schedule' ? (
                 <ScheduleGrid
                   events={events}
                   onEventClick={openEventModal}

@@ -265,9 +265,9 @@ const EventModal = ({ event, onSave, onDelete, onClose }) => {
                     {/* 캠퍼스맵 이미지 */}
                     <div className="relative">
                       <img
-                        src="/kaist-campus-map.png"
+                        src="/SCR-20250921-blps.jpeg"
                         alt="KAIST 캠퍼스맵"
-                        className="w-full h-64 object-cover rounded-lg border border-gray-200"
+                        className="w-full h-64 object-contain rounded-lg border border-gray-200"
                         onError={(e) => {
                           e.target.style.display = 'none'
                           e.target.nextElementSibling.style.display = 'block'
