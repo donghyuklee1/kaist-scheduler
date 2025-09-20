@@ -52,11 +52,42 @@ const EventModal = ({ event, onSave, onDelete, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    
+    // 필수 필드 검증
+    if (!formData.title.trim()) {
+      alert('제목을 입력해주세요.')
+      return
+    }
+    
+    if (!formData.date) {
+      alert('날짜를 선택해주세요.')
+      return
+    }
+    
+    if (!formData.time) {
+      alert('시간을 입력해주세요.')
+      return
+    }
+    
+    // 날짜와 시간을 결합하여 유효한 Date 객체 생성
+    const dateTimeString = `${formData.date}T${formData.time}:00`
+    const eventDate = new Date(dateTimeString)
+    
+    // 유효한 날짜인지 확인
+    if (isNaN(eventDate.getTime())) {
+      alert('올바른 날짜와 시간을 입력해주세요.')
+      return
+    }
+    
     const eventData = {
       ...formData,
       id: event?.id,
-      date: new Date(formData.date)
+      date: eventDate,
+      // buildingId가 있으면 location을 건물명으로 설정
+      location: formData.buildingId ? formData.location : formData.location
     }
+    
+    console.log('일정 저장 데이터:', eventData)
     onSave(eventData)
     onClose()
   }

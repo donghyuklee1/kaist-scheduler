@@ -102,11 +102,46 @@ function App() {
 
   const addEvent = async (event) => {
     try {
+      console.log('일정 추가 시도:', event)
+      
+      // Firebase 설정 확인
+      const isFirebaseConfigured = checkFirebaseConnection()
+      if (!isFirebaseConfigured) {
+        // Firebase가 설정되지 않은 경우 로컬 상태에만 저장
+        console.log('Firebase 미설정 - 로컬 상태에 저장')
+        const newEvent = {
+          ...event,
+          id: Date.now().toString(), // 임시 ID
+          userId: user.uid,
+          createdAt: new Date()
+        }
+        setEvents(prev => [...prev, newEvent])
+        closeEventModal()
+        alert('일정이 임시로 저장되었습니다. Firebase 설정 후 새로고침하면 데이터가 사라질 수 있습니다.')
+        return
+      }
+      
       await createEventInFirestore(event, user.uid)
       closeEventModal()
+      console.log('일정 생성 성공')
     } catch (error) {
       console.error('이벤트 생성 실패:', error)
-      alert('이벤트 생성에 실패했습니다.')
+      
+      // Firebase 오류인 경우 로컬 상태에 저장
+      if (error.message.includes('Firestore') || error.message.includes('Firebase')) {
+        console.log('Firebase 오류 - 로컬 상태에 저장')
+        const newEvent = {
+          ...event,
+          id: Date.now().toString(),
+          userId: user.uid,
+          createdAt: new Date()
+        }
+        setEvents(prev => [...prev, newEvent])
+        closeEventModal()
+        alert('일정이 임시로 저장되었습니다. Firebase 설정을 확인해주세요.')
+      } else {
+        alert('이벤트 생성에 실패했습니다: ' + error.message)
+      }
     }
   }
 
