@@ -169,7 +169,7 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
                 <div>
                   {/* 헤더 */}
                   <div className="flex items-center justify-between mb-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${meetingTypes[meeting.type]?.color} bg-opacity-20`}>
+                    <span className={`px-4 py-2 rounded-full text-sm font-bold ${meetingTypes[meeting.type]?.color} bg-opacity-30 shadow-md border-2 border-white`}>
                       {meetingTypes[meeting.type]?.icon} {meetingTypes[meeting.type]?.label}
                     </span>
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(meeting.status)}`}>
@@ -221,8 +221,8 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
                       whileHover={{ scale: 1.1 }}
                       className="w-2 h-2 rounded-full bg-kaist-blue"
                     ></motion.div>
-                    <span className="text-xs text-gray-400">
-                      {format(new Date(meeting.createdAt), 'yyyy.MM.dd', { locale: ko })}
+                    <span className="text-xs text-gray-500 font-medium">
+                      생성: {format(new Date(meeting.createdAt), 'yyyy.MM.dd', { locale: ko })}
                     </span>
                   </div>
 
