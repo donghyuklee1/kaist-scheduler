@@ -59,6 +59,13 @@ function App() {
   const [showMeetingDetails, setShowMeetingDetails] = useState(false)
   const [showFirebaseSetupAlert, setShowFirebaseSetupAlert] = useState(false)
 
+  // 사용자 로그인 상태에 따른 로그인 페이지 관리
+  useEffect(() => {
+    if (user && showLoginPage) {
+      setShowLoginPage(false)
+    }
+  }, [user, showLoginPage])
+
   // Firestore 실시간 구독 설정
   useEffect(() => {
     // Firebase 연결 상태 확인
@@ -387,7 +394,7 @@ function App() {
         </Suspense>
       )}
 
-      {showLoginPage && (
+      {showLoginPage && !user && (
         <Suspense fallback={<LoadingSpinner />}>
           <LoginPage
             onBack={() => setShowLoginPage(false)}
