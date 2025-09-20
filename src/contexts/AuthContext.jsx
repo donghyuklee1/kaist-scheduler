@@ -60,6 +60,9 @@ export const AuthProvider = ({ children }) => {
         throw new Error('로그인이 필요합니다')
       }
 
+      console.log('프로필 업데이트 시작:', profileData)
+
+      // Firebase Auth 프로필 업데이트
       await updateFirebaseProfile(user, {
         displayName: profileData.displayName,
         photoURL: profileData.photoURL
@@ -71,6 +74,15 @@ export const AuthProvider = ({ children }) => {
         uid: user.uid
       }
       localStorage.setItem(`user_${user.uid}`, JSON.stringify(userData))
+      
+      // 사용자 상태 강제 새로고침
+      setUser(prevUser => ({
+        ...prevUser,
+        displayName: profileData.displayName,
+        photoURL: profileData.photoURL
+      }))
+      
+      console.log('프로필 업데이트 완료')
       
     } catch (error) {
       console.error('프로필 업데이트 실패:', error)

@@ -341,7 +341,21 @@ export const updateAvailability = async (meetingId, userId, timeSlotIds) => {
 // 공지사항 추가
 export const addAnnouncement = async (meetingId, announcementData, userId) => {
   try {
+    console.log('공지사항 추가 시작:', { meetingId, announcementData, userId })
+    
+    if (!db) {
+      throw new Error('Firestore 데이터베이스가 초기화되지 않았습니다.')
+    }
+    
     const meetingRef = doc(db, COLLECTIONS.MEETINGS, meetingId)
+    
+    // 현재 모임 데이터를 가져와서 공지사항을 추가
+    const meetingDoc = await getDoc(meetingRef)
+    if (!meetingDoc.exists()) {
+      throw new Error('모임을 찾을 수 없습니다')
+    }
+    
+    const meetingData = meetingDoc.data()
     const newAnnouncement = {
       id: Date.now().toString(),
       ...announcementData,
@@ -349,11 +363,15 @@ export const addAnnouncement = async (meetingId, announcementData, userId) => {
       createdAt: new Date().toISOString(),
       priority: announcementData.priority || 'normal'
     }
-
+    
+    const updatedAnnouncements = [...(meetingData.announcements || []), newAnnouncement]
+    
     await updateDoc(meetingRef, {
-      announcements: arrayUnion(newAnnouncement),
+      announcements: updatedAnnouncements,
       updatedAt: serverTimestamp()
     })
+    
+    console.log('공지사항 추가 성공:', newAnnouncement)
   } catch (error) {
     console.error('공지사항 추가 실패:', error)
     throw error

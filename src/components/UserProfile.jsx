@@ -35,7 +35,21 @@ const UserProfile = ({ onNavigateToProfile, onNavigateToSettings }) => {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-3 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-700/50 transition-all duration-300"
       >
-        <div className="w-8 h-8 bg-kaist-blue rounded-full flex items-center justify-center text-white font-bold text-sm">
+        {user?.photoURL ? (
+          <img 
+            src={user.photoURL} 
+            alt={getUserDisplayName()}
+            className="w-8 h-8 rounded-full object-cover"
+            onError={(e) => {
+              // 이미지 로드 실패 시 기본 아바타 표시
+              e.target.style.display = 'none'
+              e.target.nextElementSibling.style.display = 'flex'
+            }}
+          />
+        ) : null}
+        <div 
+          className={`w-8 h-8 bg-kaist-blue rounded-full flex items-center justify-center text-white font-bold text-sm ${user?.photoURL ? 'hidden' : ''}`}
+        >
           {getUserInitials()}
         </div>
         <div className="hidden md:block text-left">
