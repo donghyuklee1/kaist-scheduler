@@ -69,27 +69,42 @@ const EventModal = ({ event, onSave, onDelete, onClose }) => {
       return
     }
     
-    // 날짜와 시간을 결합하여 유효한 Date 객체 생성
-    const dateTimeString = `${formData.date}T${formData.time}:00`
-    const eventDate = new Date(dateTimeString)
-    
-    // 유효한 날짜인지 확인
-    if (isNaN(eventDate.getTime())) {
-      alert('올바른 날짜와 시간을 입력해주세요.')
-      return
+    try {
+      // 날짜와 시간을 결합하여 유효한 Date 객체 생성
+      let eventDate
+      
+      if (formData.date instanceof Date) {
+        // 이미 Date 객체인 경우
+        const [hours, minutes] = formData.time.split(':')
+        eventDate = new Date(formData.date)
+        eventDate.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+      } else {
+        // 문자열인 경우
+        const dateTimeString = `${formData.date}T${formData.time}:00`
+        eventDate = new Date(dateTimeString)
+      }
+      
+      // 유효한 날짜인지 확인
+      if (isNaN(eventDate.getTime())) {
+        alert('올바른 날짜와 시간을 입력해주세요.')
+        return
+      }
+      
+      const eventData = {
+        ...formData,
+        id: event?.id,
+        date: eventDate,
+        // buildingId가 있으면 location을 건물명으로 설정
+        location: formData.buildingId ? formData.location : formData.location
+      }
+      
+      console.log('일정 저장 데이터:', eventData)
+      onSave(eventData)
+      onClose()
+    } catch (error) {
+      console.error('일정 데이터 처리 오류:', error)
+      alert('일정 데이터 처리 중 오류가 발생했습니다: ' + error.message)
     }
-    
-    const eventData = {
-      ...formData,
-      id: event?.id,
-      date: eventDate,
-      // buildingId가 있으면 location을 건물명으로 설정
-      location: formData.buildingId ? formData.location : formData.location
-    }
-    
-    console.log('일정 저장 데이터:', eventData)
-    onSave(eventData)
-    onClose()
   }
 
   const handleDelete = () => {

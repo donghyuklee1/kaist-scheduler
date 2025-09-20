@@ -94,8 +94,35 @@ export const createEvent = async (eventData, userId) => {
       throw new Error('Firestore 데이터베이스가 초기화되지 않았습니다.')
     }
     
+    // 필수 필드 검증
+    if (!userId) {
+      throw new Error('사용자 ID가 필요합니다.')
+    }
+    
+    if (!eventData.title || !eventData.date) {
+      throw new Error('제목과 날짜는 필수입니다.')
+    }
+    
+    // 날짜 객체 변환
+    let eventDate = eventData.date
+    if (typeof eventDate === 'string') {
+      eventDate = new Date(eventDate)
+    }
+    
+    // 유효한 날짜인지 확인
+    if (isNaN(eventDate.getTime())) {
+      throw new Error('올바른 날짜 형식이 아닙니다.')
+    }
+    
     const eventDoc = {
-      ...eventData,
+      title: eventData.title,
+      description: eventData.description || '',
+      date: eventDate,
+      time: eventData.time || '',
+      location: eventData.location || '',
+      buildingId: eventData.buildingId || '',
+      category: eventData.category || 'personal',
+      priority: eventData.priority || 'medium',
       userId,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
@@ -113,6 +140,16 @@ export const createEvent = async (eventData, userId) => {
       message: error.message,
       stack: error.stack
     })
+    
+    // Firestore 특정 오류 처리
+    if (error.code === 'permission-denied') {
+      throw new Error('권한이 없습니다. 다시 로그인해주세요.')
+    } else if (error.code === 'unavailable') {
+      throw new Error('네트워크 연결을 확인해주세요.')
+    } else if (error.code === 'invalid-argument') {
+      throw new Error('입력 데이터가 올바르지 않습니다.')
+    }
+    
     throw error
   }
 }

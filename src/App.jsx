@@ -105,6 +105,16 @@ function App() {
     try {
       console.log('일정 추가 시도:', event)
       
+      // 사용자 인증 확인
+      if (!user || !user.uid) {
+        throw new Error('로그인이 필요합니다.')
+      }
+      
+      // 이벤트 데이터 검증
+      if (!event.title || !event.date) {
+        throw new Error('제목과 날짜는 필수입니다.')
+      }
+      
       // Firebase 설정 확인
       const isFirebaseConfigured = checkFirebaseConnection()
       if (!isFirebaseConfigured) {
@@ -122,14 +132,27 @@ function App() {
         return
       }
       
-      await createEventInFirestore(event, user.uid)
+      // Firestore에 이벤트 생성
+      const eventId = await createEventInFirestore(event, user.uid)
+      console.log('일정 생성 성공, ID:', eventId)
+      
+      // 성공 메시지
+      alert('일정이 성공적으로 추가되었습니다!')
       closeEventModal()
-      console.log('일정 생성 성공')
+      
     } catch (error) {
       console.error('이벤트 생성 실패:', error)
+      console.error('에러 상세:', error)
       
-      // Firebase 오류인 경우 로컬 상태에 저장
-      if (error.message.includes('Firestore') || error.message.includes('Firebase')) {
+      // 사용자 친화적인 에러 메시지
+      let errorMessage = '일정 생성에 실패했습니다.'
+      
+      if (error.message.includes('permission')) {
+        errorMessage = '권한이 없습니다. 다시 로그인해주세요.'
+      } else if (error.message.includes('network')) {
+        errorMessage = '네트워크 연결을 확인해주세요.'
+      } else if (error.message.includes('Firestore') || error.message.includes('Firebase')) {
+        // Firebase 오류인 경우 로컬 상태에 저장
         console.log('Firebase 오류 - 로컬 상태에 저장')
         const newEvent = {
           ...event,
@@ -140,9 +163,12 @@ function App() {
         setEvents(prev => [...prev, newEvent])
         closeEventModal()
         alert('일정이 임시로 저장되었습니다. Firebase 설정을 확인해주세요.')
-      } else {
-        alert('이벤트 생성에 실패했습니다: ' + error.message)
+        return
+      } else if (error.message) {
+        errorMessage = error.message
       }
+      
+      alert(errorMessage)
     }
   }
 
