@@ -41,30 +41,39 @@ const LandingPage = ({ onGetStarted }) => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Floating Particles */}
+        {/* Radial Particles */}
         <div className="absolute inset-0">
-          {[...Array(20)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-2 h-2 bg-blue-400/20 dark:bg-blue-300/10 rounded-full"
-              initial={{
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
-                scale: Math.random() * 0.5 + 0.5,
-              }}
-              animate={{
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
-                scale: Math.random() * 0.5 + 0.5,
-              }}
-              transition={{
-                duration: Math.random() * 10 + 10,
-                repeat: Infinity,
-                repeatType: "reverse",
-                ease: "linear",
-              }}
-            />
-          ))}
+          {[...Array(30)].map((_, i) => {
+            const angle = (i / 30) * Math.PI * 2; // 360도 분할
+            const distance = 200 + Math.random() * 300; // 중앙에서의 거리
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            return (
+              <motion.div
+                key={i}
+                className="absolute w-1.5 h-1.5 bg-blue-400/30 dark:bg-blue-300/20 rounded-full"
+                initial={{
+                  x: centerX,
+                  y: centerY,
+                  scale: 0,
+                  opacity: 0,
+                }}
+                animate={{
+                  x: centerX + Math.cos(angle) * distance,
+                  y: centerY + Math.sin(angle) * distance,
+                  scale: [0, 1, 0.8],
+                  opacity: [0, 1, 0],
+                }}
+                transition={{
+                  duration: 3 + Math.random() * 2,
+                  repeat: Infinity,
+                  delay: Math.random() * 2,
+                  ease: "easeOut",
+                }}
+              />
+            );
+          })}
         </div>
         
         {/* Gradient Orbs */}
