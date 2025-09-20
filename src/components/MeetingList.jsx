@@ -222,7 +222,17 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
                       className="w-2 h-2 rounded-full bg-kaist-blue"
                     ></motion.div>
                     <span className="text-xs text-gray-500 font-medium">
-                      생성: {meeting.createdAt ? format(new Date(meeting.createdAt), 'yyyy.MM.dd', { locale: ko }) : '날짜 미정'}
+                      생성: {(() => {
+                        try {
+                          if (!meeting.createdAt) return '날짜 미정'
+                          const date = meeting.createdAt.toDate ? meeting.createdAt.toDate() : new Date(meeting.createdAt)
+                          if (isNaN(date.getTime())) return '날짜 오류'
+                          return format(date, 'yyyy.MM.dd', { locale: ko })
+                        } catch (error) {
+                          console.error('날짜 포맷 오류:', error)
+                          return '날짜 오류'
+                        }
+                      })()}
                     </span>
                   </div>
 

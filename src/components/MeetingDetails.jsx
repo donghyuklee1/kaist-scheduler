@@ -481,7 +481,17 @@ const MeetingDetails = ({ meeting, currentUser, onBack }) => {
                         announcement.priority === 'high' ? 'text-red-500 dark:text-red-400' :
                         announcement.priority === 'low' ? 'text-gray-500 dark:text-gray-400' : 'text-blue-500 dark:text-blue-400'
                       }`}>
-                        {format(announcement.createdAt, 'yyyy년 M월 d일 HH:mm', { locale: ko })}
+                        {(() => {
+                          try {
+                            if (!announcement.createdAt) return '날짜 미정'
+                            const date = announcement.createdAt.toDate ? announcement.createdAt.toDate() : new Date(announcement.createdAt)
+                            if (isNaN(date.getTime())) return '날짜 오류'
+                            return format(date, 'yyyy년 M월 d일 HH:mm', { locale: ko })
+                          } catch (error) {
+                            console.error('날짜 포맷 오류:', error)
+                            return '날짜 오류'
+                          }
+                        })()}
                       </div>
                     </div>
                   ))
@@ -505,7 +515,17 @@ const MeetingDetails = ({ meeting, currentUser, onBack }) => {
                     <div>• 모임 유형: {meeting?.type || '스터디'}</div>
                     <div>• 최대 참여자: {meeting?.maxParticipants || '제한 없음'}명</div>
                     <div>• 장소: {meeting?.location || '미정'}</div>
-                    <div>• 생성일: {format(meeting?.createdAt || new Date(), 'yyyy년 M월 d일', { locale: ko })}</div>
+                    <div>• 생성일: {(() => {
+                      try {
+                        if (!meeting?.createdAt) return '날짜 미정'
+                        const date = meeting.createdAt.toDate ? meeting.createdAt.toDate() : new Date(meeting.createdAt)
+                        if (isNaN(date.getTime())) return '날짜 오류'
+                        return format(date, 'yyyy년 M월 d일', { locale: ko })
+                      } catch (error) {
+                        console.error('날짜 포맷 오류:', error)
+                        return '날짜 오류'
+                      }
+                    })()}</div>
                   </div>
                 </div>
               </div>
