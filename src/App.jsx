@@ -49,25 +49,26 @@ function App() {
 
   // Firestore 실시간 구독 설정
   useEffect(() => {
-    if (!user) {
-      setEvents([])
-      setMeetings([])
-      return
-    }
-
-    // 사용자 이벤트 구독
-    const unsubscribeEvents = subscribeToUserEvents(user.uid, (eventsData) => {
-      setEvents(eventsData)
-    })
-
-    // 모든 모임 구독
+    // 모든 모임 구독 (로그인 여부와 관계없이)
     const unsubscribeMeetings = subscribeToMeetings((meetingsData) => {
       setMeetings(meetingsData)
     })
 
+    // 사용자 이벤트 구독 (로그인한 사용자만)
+    let unsubscribeEvents = null
+    if (user) {
+      unsubscribeEvents = subscribeToUserEvents(user.uid, (eventsData) => {
+        setEvents(eventsData)
+      })
+    } else {
+      setEvents([])
+    }
+
     // 정리 함수
     return () => {
-      unsubscribeEvents()
+      if (unsubscribeEvents) {
+        unsubscribeEvents()
+      }
       unsubscribeMeetings()
     }
   }, [user])

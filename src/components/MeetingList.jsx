@@ -222,7 +222,7 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
                       className="w-2 h-2 rounded-full bg-kaist-blue"
                     ></motion.div>
                     <span className="text-xs text-gray-500 font-medium">
-                      생성: {format(new Date(meeting.createdAt), 'yyyy.MM.dd', { locale: ko })}
+                      생성: {meeting.createdAt ? format(new Date(meeting.createdAt), 'yyyy.MM.dd', { locale: ko }) : '날짜 미정'}
                     </span>
                   </div>
 

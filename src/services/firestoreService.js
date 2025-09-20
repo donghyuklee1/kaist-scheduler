@@ -51,8 +51,8 @@ export const createEvent = async (eventData, userId) => {
     const docRef = await addDoc(collection(db, COLLECTIONS.EVENTS), {
       ...eventData,
       userId,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     })
     return docRef.id
   } catch (error) {
@@ -67,7 +67,7 @@ export const updateEvent = async (eventId, eventData) => {
     const eventRef = doc(db, COLLECTIONS.EVENTS, eventId)
     await updateDoc(eventRef, {
       ...eventData,
-      updatedAt: serverTimestamp()
+      updatedAt: new Date().toISOString()
     })
   } catch (error) {
     console.error('이벤트 업데이트 실패:', error)
@@ -118,12 +118,12 @@ export const createMeeting = async (meetingData, userId) => {
     const meetingDoc = {
       ...meetingData,
       owner: userId,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      createdAt: new Date().toISOString(), // 클라이언트 시간 사용
+      updatedAt: new Date().toISOString(), // 클라이언트 시간 사용
       participants: [{
         userId,
         status: 'owner',
-        joinedAt: new Date().toISOString() // serverTimestamp() 대신 클라이언트 시간 사용
+        joinedAt: new Date().toISOString()
       }],
       availability: {},
       announcements: []
@@ -146,7 +146,7 @@ export const updateMeeting = async (meetingId, meetingData) => {
     const meetingRef = doc(db, COLLECTIONS.MEETINGS, meetingId)
     await updateDoc(meetingRef, {
       ...meetingData,
-      updatedAt: serverTimestamp()
+      updatedAt: new Date().toISOString()
     })
   } catch (error) {
     console.error('모임 업데이트 실패:', error)
@@ -172,9 +172,9 @@ export const joinMeeting = async (meetingId, userId) => {
       participants: arrayUnion({
         userId,
         status: 'pending',
-        joinedAt: new Date().toISOString() // serverTimestamp() 대신 클라이언트 시간 사용
+        joinedAt: new Date().toISOString()
       }),
-      updatedAt: serverTimestamp()
+      updatedAt: new Date().toISOString()
     })
   } catch (error) {
     console.error('모임 참여 실패:', error)
@@ -199,10 +199,10 @@ export const updateParticipantStatus = async (meetingId, userId, newStatus) => {
       p.userId === userId ? { ...p, status: newStatus } : p
     )
     
-    await updateDoc(meetingRef, {
-      participants: updatedParticipants,
-      updatedAt: serverTimestamp()
-    })
+        await updateDoc(meetingRef, {
+          participants: updatedParticipants,
+          updatedAt: new Date().toISOString()
+        })
   } catch (error) {
     console.error('참여자 상태 업데이트 실패:', error)
     throw error
@@ -218,10 +218,10 @@ export const updateAvailability = async (meetingId, userId, timeSlotIds) => {
     }
     
     const meetingRef = doc(db, COLLECTIONS.MEETINGS, meetingId)
-    await updateDoc(meetingRef, {
-      [`availability.${userId}`]: timeSlotIds,
-      updatedAt: serverTimestamp()
-    })
+        await updateDoc(meetingRef, {
+          [`availability.${userId}`]: timeSlotIds,
+          updatedAt: new Date().toISOString()
+        })
   } catch (error) {
     console.error('가용성 업데이트 실패:', error)
     throw error
@@ -232,18 +232,18 @@ export const updateAvailability = async (meetingId, userId, timeSlotIds) => {
 export const addAnnouncement = async (meetingId, announcementData, userId) => {
   try {
     const meetingRef = doc(db, COLLECTIONS.MEETINGS, meetingId)
-    const newAnnouncement = {
-      id: Date.now().toString(),
-      ...announcementData,
-      authorId: userId,
-      createdAt: serverTimestamp(),
-      priority: announcementData.priority || 'normal'
-    }
-    
-    await updateDoc(meetingRef, {
-      announcements: arrayUnion(newAnnouncement),
-      updatedAt: serverTimestamp()
-    })
+        const newAnnouncement = {
+          id: Date.now().toString(),
+          ...announcementData,
+          authorId: userId,
+          createdAt: new Date().toISOString(),
+          priority: announcementData.priority || 'normal'
+        }
+
+        await updateDoc(meetingRef, {
+          announcements: arrayUnion(newAnnouncement),
+          updatedAt: new Date().toISOString()
+        })
   } catch (error) {
     console.error('공지사항 추가 실패:', error)
     throw error
@@ -266,10 +266,10 @@ export const deleteAnnouncement = async (meetingId, announcementId, userId) => {
       announcement => announcement.id !== announcementId
     )
     
-    await updateDoc(meetingRef, {
-      announcements: updatedAnnouncements,
-      updatedAt: serverTimestamp()
-    })
+        await updateDoc(meetingRef, {
+          announcements: updatedAnnouncements,
+          updatedAt: new Date().toISOString()
+        })
   } catch (error) {
     console.error('공지사항 삭제 실패:', error)
     throw error
