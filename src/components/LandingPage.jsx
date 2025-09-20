@@ -56,7 +56,7 @@ const LandingPage = ({ onGetStarted }) => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="mb-8"
             >
-              <div className="w-32 h-32 mx-auto mb-6">
+              <div className="w-40 h-40 mx-auto mb-4">
                 <img 
                   src="/kaist_logo.png" 
                   alt="KAIST Logo" 
