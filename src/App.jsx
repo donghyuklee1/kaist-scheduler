@@ -1,37 +1,45 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense, lazy } from 'react'
 import { motion } from 'framer-motion'
 import Header from './components/Header'
-import Calendar from './components/Calendar'
-import Dashboard from './components/Dashboard'
-import EventModal from './components/EventModal'
-import ScheduleGrid from './components/ScheduleGrid'
-import MeetingList from './components/MeetingList'
-import MeetingModal from './components/MeetingModal'
-import TimeCoordination from './components/TimeCoordination'
-import MeetingDetails from './components/MeetingDetails'
-import LoginModal from './components/LoginModal'
-import UserProfile from './components/UserProfile'
-import ProfilePage from './components/ProfilePage'
-import SettingsPage from './components/SettingsPage'
 import Footer from './components/Footer'
+
+// 동적 import를 사용한 지연 로딩
+const Calendar = lazy(() => import('./components/Calendar'))
+const Dashboard = lazy(() => import('./components/Dashboard'))
+const EventModal = lazy(() => import('./components/EventModal'))
+const ScheduleGrid = lazy(() => import('./components/ScheduleGrid'))
+const MeetingList = lazy(() => import('./components/MeetingList'))
+const MeetingModal = lazy(() => import('./components/MeetingModal'))
+const TimeCoordination = lazy(() => import('./components/TimeCoordination'))
+const MeetingDetails = lazy(() => import('./components/MeetingDetails'))
+const LoginModal = lazy(() => import('./components/LoginModal'))
+const ProfilePage = lazy(() => import('./components/ProfilePage'))
+const SettingsPage = lazy(() => import('./components/SettingsPage'))
 import { Calendar as CalendarIcon, Grid, Users } from 'lucide-react'
 import { getBuildingById } from './data/buildings'
 import { useAuth } from './contexts/AuthContext'
 import { 
   subscribeToUserEvents, 
-  subscribeToMeetings,
-  createEvent as createEventInFirestore,
-  updateEvent as updateEventInFirestore,
-  deleteEvent as deleteEventInFirestore,
-  createMeeting as createMeetingInFirestore,
-  updateMeeting as updateMeetingInFirestore,
-  joinMeeting as joinMeetingInFirestore,
-  updateAvailability as updateAvailabilityInFirestore,
-  addAnnouncement as addAnnouncementInFirestore,
-  deleteAnnouncement as deleteAnnouncementInFirestore,
-  getParticipantsCountForSlot,
-  isMeetingOwner
+  subscribeToMeetings, 
+  createEvent as createEventInFirestore, 
+  updateEvent as updateEventInFirestore, 
+  deleteEvent as deleteEventInFirestore, 
+  createMeeting as createMeetingInFirestore, 
+  updateMeeting as updateMeetingInFirestore, 
+  joinMeeting as joinMeetingInFirestore, 
+  updateAvailability as updateAvailabilityInFirestore, 
+  addAnnouncement as addAnnouncementInFirestore, 
+  deleteAnnouncement as deleteAnnouncementInFirestore, 
+  getParticipantsCountForSlot, 
+  isMeetingOwner 
 } from './services/firestoreService'
+
+// 로딩 컴포넌트
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center h-64">
+    <div className="w-8 h-8 border-4 border-kaist-blue border-t-transparent rounded-full animate-spin"></div>
+  </div>
+)
 
 function App() {
   const { user, loading } = useAuth()
@@ -238,83 +246,91 @@ function App() {
           transition={{ duration: 0.5 }}
           className="glass-effect rounded-2xl p-6 shadow-xl"
         >
-                  {view === 'calendar' ? (
-                    <Dashboard
-                      selectedDate={selectedDate}
-                      setSelectedDate={setSelectedDate}
-                      events={events}
-                      meetings={meetings}
-                      onEventClick={openEventModal}
-                      onDateClick={(date) => {
-                        setSelectedDate(date)
-                        openEventModal({ date })
-                      }}
-                      onViewChange={setView}
-                      currentUser={user}
-                    />
-                  ) : view === 'schedule' ? (
-                <ScheduleGrid
-                  events={events}
-                  onEventClick={openEventModal}
-                  onAddEvent={() => openEventModal()}
+          <Suspense fallback={<LoadingSpinner />}>
+            {view === 'calendar' ? (
+              <Dashboard
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
+                events={events}
+                meetings={meetings}
+                onEventClick={openEventModal}
+                onDateClick={(date) => {
+                  setSelectedDate(date)
+                  openEventModal({ date })
+                }}
+                onViewChange={setView}
+                currentUser={user}
+              />
+            ) : view === 'schedule' ? (
+              <ScheduleGrid
+                events={events}
+                onEventClick={openEventModal}
+                onAddEvent={() => openEventModal()}
+              />
+            ) : view === 'meetings' ? (
+              showMeetingDetails ? (
+                <MeetingDetails
+                  meeting={selectedMeeting}
+                  currentUser={user}
+                  onBack={() => setShowMeetingDetails(false)}
                 />
-                  ) : view === 'meetings' ? (
-                    showMeetingDetails ? (
-                      <MeetingDetails
-                        meeting={selectedMeeting}
-                        currentUser={user}
-                        onBack={() => setShowMeetingDetails(false)}
-                      />
-                    ) : selectedMeeting ? (
-                      <TimeCoordination
-                        meeting={selectedMeeting}
-                        currentUser={user}
-                        onAvailabilityChange={handleAvailabilityChange}
-                        onBack={() => setSelectedMeeting(null)}
-                        onComplete={() => setShowMeetingDetails(true)}
-                      />
-                    ) : (
-                      <MeetingList
-                        meetings={meetings}
-                        currentUser={user}
-                        onMeetingClick={(meeting) => setSelectedMeeting(meeting)}
-                        onCreateMeeting={() => openMeetingModal()}
-                        onJoinMeeting={joinMeeting}
-                      />
-                    )
-                  ) : view === 'profile' ? (
-                    <ProfilePage onBack={() => setView('calendar')} />
-                  ) : view === 'settings' ? (
-                    <SettingsPage onBack={() => setView('calendar')} />
-                  ) : null}
+              ) : selectedMeeting ? (
+                <TimeCoordination
+                  meeting={selectedMeeting}
+                  currentUser={user}
+                  onAvailabilityChange={handleAvailabilityChange}
+                  onBack={() => setSelectedMeeting(null)}
+                  onComplete={() => setShowMeetingDetails(true)}
+                />
+              ) : (
+                <MeetingList
+                  meetings={meetings}
+                  currentUser={user}
+                  onMeetingClick={(meeting) => setSelectedMeeting(meeting)}
+                  onCreateMeeting={() => openMeetingModal()}
+                  onJoinMeeting={joinMeeting}
+                />
+              )
+            ) : view === 'profile' ? (
+              <ProfilePage onBack={() => setView('calendar')} />
+            ) : view === 'settings' ? (
+              <SettingsPage onBack={() => setView('calendar')} />
+            ) : null}
+          </Suspense>
         </motion.div>
       </main>
 
       <Footer />
 
       {isEventModalOpen && (
-        <EventModal
-          event={editingEvent}
-          onSave={editingEvent ? updateEvent : addEvent}
-          onDelete={editingEvent ? () => deleteEvent(editingEvent.id) : null}
-          onClose={closeEventModal}
-        />
+        <Suspense fallback={<LoadingSpinner />}>
+          <EventModal
+            event={editingEvent}
+            onSave={editingEvent ? updateEvent : addEvent}
+            onDelete={editingEvent ? () => deleteEvent(editingEvent.id) : null}
+            onClose={closeEventModal}
+          />
+        </Suspense>
       )}
 
-          {isMeetingModalOpen && (
-            <MeetingModal
-              meeting={editingMeeting}
-              onSave={editingMeeting ? updateMeeting : addMeeting}
-              onClose={closeMeetingModal}
-              currentUser={user}
-            />
-          )}
+      {isMeetingModalOpen && (
+        <Suspense fallback={<LoadingSpinner />}>
+          <MeetingModal
+            meeting={editingMeeting}
+            onSave={editingMeeting ? updateMeeting : addMeeting}
+            onClose={closeMeetingModal}
+            currentUser={user}
+          />
+        </Suspense>
+      )}
 
       {isLoginModalOpen && (
-        <LoginModal
-          isOpen={isLoginModalOpen}
-          onClose={() => setIsLoginModalOpen(false)}
-        />
+        <Suspense fallback={<LoadingSpinner />}>
+          <LoginModal
+            isOpen={isLoginModalOpen}
+            onClose={() => setIsLoginModalOpen(false)}
+          />
+        </Suspense>
       )}
     </div>
   )
