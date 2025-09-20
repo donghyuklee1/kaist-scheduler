@@ -114,7 +114,7 @@ export const createMeeting = async (meetingData, userId) => {
       participants: [{
         userId,
         status: 'owner',
-        joinedAt: serverTimestamp()
+        joinedAt: new Date().toISOString() // serverTimestamp() 대신 클라이언트 시간 사용
       }],
       availability: {},
       announcements: []
@@ -158,7 +158,7 @@ export const joinMeeting = async (meetingId, userId) => {
       participants: arrayUnion({
         userId,
         status: 'pending',
-        joinedAt: serverTimestamp()
+        joinedAt: new Date().toISOString() // serverTimestamp() 대신 클라이언트 시간 사용
       }),
       updatedAt: serverTimestamp()
     })
