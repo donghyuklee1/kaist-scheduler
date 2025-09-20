@@ -58,8 +58,8 @@ const LandingPage = ({ onGetStarted }) => {
             >
               <div className="w-40 h-40 mx-auto mb-4">
                 <img 
-                  src="/kaist_logo.png" 
-                  alt="KAIST Logo" 
+                  src="/SCR-20250921-cyau.png" 
+                  alt="Compendium Logo" 
                   className="w-full h-full object-contain"
                   onError={(e) => {
                     // 로고 로드 실패 시 기본 아이콘 표시

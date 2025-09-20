@@ -27,8 +27,20 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
             onClick={() => setView('calendar')}
             className="flex items-center space-x-3 cursor-pointer"
           >
-            <div className="w-10 h-10 bg-gradient-to-br from-kaist-blue to-kaist-lightblue rounded-xl flex items-center justify-center">
-              <CalendarIcon className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center">
+              <img 
+                src="/SCR-20250921-cyau.png" 
+                alt="Compendium Logo" 
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  // 로고 로드 실패 시 기본 아이콘 표시
+                  e.target.style.display = 'none'
+                  e.target.nextElementSibling.style.display = 'flex'
+                }}
+              />
+              <div className="w-full h-full bg-gradient-to-br from-kaist-blue to-kaist-lightblue rounded-xl flex items-center justify-center hidden">
+                <CalendarIcon className="w-6 h-6 text-white" />
+              </div>
             </div>
                 <div className="text-left">
                   <h1 className="text-2xl font-bold text-kaist-blue leading-tight">Compendium</h1>
