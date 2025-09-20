@@ -19,7 +19,7 @@ const LandingPage = ({ onGetStarted }) => {
     {
       icon: <Clock className="w-8 h-8" />,
       title: "시간 조율",
-      description: "when2meet 스타일의 시간 조율로 모든 참여자가 만족하는 시간을 찾아보세요."
+      description: "Scroll & Select 스타일의 직관적인 방식으로 최적의 모임 시간을 찾아보세요."
     },
     {
       icon: <MapPin className="w-8 h-8" />,
