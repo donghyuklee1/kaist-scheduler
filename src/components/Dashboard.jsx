@@ -77,13 +77,6 @@ const Dashboard = ({
   const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 1 })
   const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd })
 
-  // 각 날짜별 이벤트 수
-  const getEventsForDate = (date) => {
-    return events.filter(event => {
-      const eventDate = new Date(event.date)
-      return eventDate.toDateString() === date.toDateString()
-    })
-  }
 
   // 날짜 포맷팅 헬퍼
   const formatDate = (date) => {
