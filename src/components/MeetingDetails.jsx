@@ -3,16 +3,27 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Calendar, Clock, Users, MapPin, CheckCircle, XCircle, BarChart3, Bell, Settings, Plus, Trash2, Edit3, User, Mail } from 'lucide-react'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
-import { addAnnouncement, deleteAnnouncement, isMeetingOwner, getParticipantsCountForSlot } from '../services/firestoreService'
+import { 
+  addAnnouncement, 
+  deleteAnnouncement, 
+  isMeetingOwner, 
+  isMeetingParticipant,
+  hasPendingRequest,
+  sendJoinRequest,
+  handleJoinRequest,
+  cancelJoinRequest,
+  getParticipantsCountForSlot 
+} from '../services/firestoreService'
 
 const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
-  const [activeTab, setActiveTab] = useState('schedule') // 'schedule', 'attendance', 'announcements'
+  const [activeTab, setActiveTab] = useState('schedule') // 'schedule', 'attendance', 'announcements', 'requests'
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false)
   const [announcementForm, setAnnouncementForm] = useState({
     title: '',
     content: '',
     priority: 'normal'
   })
+  const [isLoading, setIsLoading] = useState(false)
 
   // 시간 슬롯 생성 (9시부터 23시까지, 30분 단위)
   const generateTimeSlots = () => {
@@ -138,8 +149,66 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
     }
   }
 
-  // 모임장 여부 확인
+  // 참가 신청 보내기
+  const handleSendJoinRequest = async () => {
+    if (!currentUser) {
+      alert('로그인이 필요합니다.')
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const userInfo = {
+        displayName: currentUser.displayName || '익명',
+        email: currentUser.email || '',
+        photoURL: currentUser.photoURL || ''
+      }
+      
+      await sendJoinRequest(meeting.id, currentUser.uid, userInfo)
+      alert('참가 신청이 성공적으로 전송되었습니다!')
+    } catch (error) {
+      console.error('참가 신청 실패:', error)
+      alert('참가 신청에 실패했습니다: ' + error.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // 참가 신청 취소
+  const handleCancelJoinRequest = async () => {
+    if (!currentUser) return
+
+    setIsLoading(true)
+    try {
+      await cancelJoinRequest(meeting.id, currentUser.uid)
+      alert('참가 신청이 취소되었습니다.')
+    } catch (error) {
+      console.error('참가 신청 취소 실패:', error)
+      alert('참가 신청 취소에 실패했습니다: ' + error.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // 참가 신청 승인/거부
+  const handleJoinRequestAction = async (userId, action) => {
+    setIsLoading(true)
+    try {
+      await handleJoinRequest(meeting.id, userId, action)
+      alert(`참가 신청이 ${action === 'approve' ? '승인' : '거부'}되었습니다.`)
+    } catch (error) {
+      console.error('참가 신청 처리 실패:', error)
+      alert('참가 신청 처리에 실패했습니다: ' + error.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // 사용자 상태 확인
   const isOwner = isMeetingOwner(meeting, currentUser?.uid)
+  const isParticipant = isMeetingParticipant(meeting, currentUser?.uid)
+  const hasRequest = hasPendingRequest(meeting, currentUser?.uid)
+  const canViewSchedule = isOwner || isParticipant
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800">
@@ -336,33 +405,37 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
           {/* Tab Navigation */}
           <div className="mb-8">
             <div className="flex space-x-2 glass-effect p-1 rounded-xl">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setActiveTab('schedule')}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 ${
-                  activeTab === 'schedule'
-                    ? 'bg-kaist-blue text-white shadow-lg'
-                    : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-                }`}
-              >
-                <Calendar className="w-4 h-4" />
-                <span className="font-medium">시간표</span>
-              </motion.button>
+              {canViewSchedule && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setActiveTab('schedule')}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 ${
+                    activeTab === 'schedule'
+                      ? 'bg-kaist-blue text-white shadow-lg'
+                      : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span className="font-medium">시간표</span>
+                </motion.button>
+              )}
 
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setActiveTab('attendance')}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 ${
-                  activeTab === 'attendance'
-                    ? 'bg-kaist-blue text-white shadow-lg'
-                    : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-                }`}
-              >
-                <BarChart3 className="w-4 h-4" />
-                <span className="font-medium">참석율</span>
-              </motion.button>
+              {canViewSchedule && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setActiveTab('attendance')}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 ${
+                    activeTab === 'attendance'
+                      ? 'bg-kaist-blue text-white shadow-lg'
+                      : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  <span className="font-medium">참석율</span>
+                </motion.button>
+              )}
 
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -377,6 +450,27 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                 <Bell className="w-4 h-4" />
                 <span className="font-medium">공지사항</span>
               </motion.button>
+
+              {isOwner && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setActiveTab('requests')}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 ${
+                    activeTab === 'requests'
+                      ? 'bg-kaist-blue text-white shadow-lg'
+                      : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <Users className="w-4 h-4" />
+                  <span className="font-medium">참가 신청</span>
+                  {meeting?.participants?.filter(p => p.status === 'pending').length > 0 && (
+                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                      {meeting.participants.filter(p => p.status === 'pending').length}
+                    </span>
+                  )}
+                </motion.button>
+              )}
             </div>
           </div>
 
@@ -674,6 +768,160 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                     })()}</div>
                   </div>
                 </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 참가 신청 탭 */}
+          {activeTab === 'requests' && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                  참가 신청 관리
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  모임 참가를 신청한 사용자들을 관리하세요
+                </p>
+              </div>
+
+              {/* 대기 중인 참가 신청 */}
+              <div className="space-y-4">
+                <h4 className="text-md font-medium text-gray-700 dark:text-gray-300">
+                  대기 중인 참가 신청 ({meeting?.participants?.filter(p => p.status === 'pending').length || 0}명)
+                </h4>
+                
+                {meeting?.participants?.filter(p => p.status === 'pending').length > 0 ? (
+                  <div className="space-y-3">
+                    {meeting.participants
+                      .filter(p => p.status === 'pending')
+                      .map((participant) => (
+                        <motion.div
+                          key={participant.userId}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-white dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                                {participant.displayName?.charAt(0)?.toUpperCase() || 'U'}
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-800 dark:text-white">
+                                  {participant.displayName || '익명'}
+                                </p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                  {participant.email || '이메일 정보 없음'}
+                                </p>
+                                <p className="text-xs text-gray-400 dark:text-gray-500">
+                                  신청일: {(() => {
+                                    try {
+                                      const date = new Date(participant.joinedAt)
+                                      return format(date, 'yyyy년 M월 d일 HH:mm', { locale: ko })
+                                    } catch (error) {
+                                      return '날짜 오류'
+                                    }
+                                  })()}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex space-x-2">
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleJoinRequestAction(participant.userId, 'approve')}
+                                disabled={isLoading}
+                                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              >
+                                승인
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleJoinRequestAction(participant.userId, 'reject')}
+                                disabled={isLoading}
+                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              >
+                                거부
+                              </motion.button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400">대기 중인 참가 신청이 없습니다</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* 비참가자를 위한 참가 신청 버튼 */}
+          {!canViewSchedule && !hasRequest && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl border border-blue-200 dark:border-gray-600"
+            >
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-kaist-blue to-kaist-lightblue rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                  이 모임에 참가하고 싶으신가요?
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  참가 신청을 보내면 모임장이 승인 후 시간표 설정이 가능합니다.
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleSendJoinRequest}
+                  disabled={isLoading}
+                  className="bg-kaist-blue hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? '신청 중...' : '참가 신청하기'}
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* 참가 신청 대기 중인 경우 */}
+          {hasRequest && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mt-8 p-6 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl border border-yellow-200 dark:border-gray-600"
+            >
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Clock className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                  참가 신청이 대기 중입니다
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  모임장이 승인하면 시간표 설정이 가능합니다.
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCancelJoinRequest}
+                  disabled={isLoading}
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? '취소 중...' : '참가 신청 취소'}
+                </motion.button>
               </div>
             </motion.div>
           )}

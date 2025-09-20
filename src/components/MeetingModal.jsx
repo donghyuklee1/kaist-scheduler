@@ -16,7 +16,8 @@ const MeetingModal = ({ meeting, onSave, onClose, currentUser }) => {
     maxParticipants: '',
     organizer: '',
     organizerContact: '',
-    status: 'draft'
+    status: 'draft',
+    visibility: 'public'
   })
 
   const [errors, setErrors] = useState({})
@@ -35,7 +36,8 @@ const MeetingModal = ({ meeting, onSave, onClose, currentUser }) => {
         maxParticipants: meeting.maxParticipants || '',
         organizer: meeting.organizer || '',
         organizerContact: meeting.organizerContact || '',
-        status: meeting.status || 'draft'
+        status: meeting.status || 'draft',
+        visibility: meeting.visibility || 'public'
       })
     } else {
       // 새 모임의 경우 기본값 설정
@@ -48,7 +50,8 @@ const MeetingModal = ({ meeting, onSave, onClose, currentUser }) => {
         maxParticipants: '',
         organizer: '',
         organizerContact: '',
-        status: 'draft'
+        status: 'draft',
+        visibility: 'public'
       })
     }
   }, [meeting])
@@ -395,6 +398,30 @@ const MeetingModal = ({ meeting, onSave, onClose, currentUser }) => {
                 />
               </div>
               {errors.maxParticipants && <p className="text-red-500 text-sm mt-1">{errors.maxParticipants}</p>}
+            </div>
+
+            {/* 공개 범위 설정 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                공개 범위
+              </label>
+              <div className="relative">
+                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <select
+                  value={formData.visibility}
+                  onChange={(e) => setFormData({ ...formData, visibility: e.target.value })}
+                  className="input-field pl-10"
+                >
+                  <option value="public">전체 공개 - 누구나 참가 신청 가능</option>
+                  <option value="kaist">KAIST 구성원만 - KAIST 이메일 계정만 참가 신청 가능</option>
+                  <option value="invite">초대 전용 - 개설자가 직접 초대한 사람만 참가 가능</option>
+                </select>
+              </div>
+              <p className="text-sm text-gray-500 mt-1">
+                {formData.visibility === 'public' && '모든 사용자가 참가 신청을 보낼 수 있습니다.'}
+                {formData.visibility === 'kaist' && 'KAIST 이메일 계정을 가진 사용자만 참가 신청을 보낼 수 있습니다.'}
+                {formData.visibility === 'invite' && '개설자가 직접 초대한 사용자만 참가할 수 있습니다.'}
+              </p>
             </div>
 
             {/* 담당자 정보 */}

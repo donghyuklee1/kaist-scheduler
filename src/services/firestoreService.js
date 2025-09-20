@@ -481,3 +481,139 @@ export const deleteMeetingInFirestore = async (meetingId) => {
 export const isMeetingOwner = (meeting, userId) => {
   return meeting.participants.some(p => p.userId === userId && p.status === 'owner')
 }
+
+// 사용자가 모임 참가자인지 확인
+export const isMeetingParticipant = (meeting, userId) => {
+  return meeting.participants.some(p => p.userId === userId && (p.status === 'owner' || p.status === 'approved'))
+}
+
+// 사용자가 참가 신청을 보낸 상태인지 확인
+export const hasPendingRequest = (meeting, userId) => {
+  return meeting.participants.some(p => p.userId === userId && p.status === 'pending')
+}
+
+// 참가 신청 보내기
+export const sendJoinRequest = async (meetingId, userId, userInfo) => {
+  try {
+    console.log('참가 신청 보내기:', { meetingId, userId, userInfo })
+    
+    if (!db) {
+      throw new Error('Firestore 데이터베이스가 초기화되지 않았습니다.')
+    }
+    
+    const meetingRef = doc(db, COLLECTIONS.MEETINGS, meetingId)
+    
+    // 현재 모임 데이터를 가져와서 중복 확인
+    const meetingDoc = await getDoc(meetingRef)
+    if (!meetingDoc.exists()) {
+      throw new Error('모임을 찾을 수 없습니다')
+    }
+    
+    const meetingData = meetingDoc.data()
+    
+    // 이미 참가자이거나 신청한 경우 확인
+    const existingParticipant = meetingData.participants.find(p => p.userId === userId)
+    if (existingParticipant) {
+      if (existingParticipant.status === 'owner' || existingParticipant.status === 'approved') {
+        throw new Error('이미 모임에 참가하고 있습니다.')
+      } else if (existingParticipant.status === 'pending') {
+        throw new Error('이미 참가 신청을 보냈습니다.')
+      }
+    }
+    
+    // 참가 신청 추가
+    const newRequest = {
+      userId,
+      status: 'pending',
+      joinedAt: new Date().toISOString(),
+      displayName: userInfo.displayName || '익명',
+      email: userInfo.email || '',
+      photoURL: userInfo.photoURL || ''
+    }
+    
+    const updatedParticipants = [...meetingData.participants, newRequest]
+    
+    await updateDoc(meetingRef, {
+      participants: updatedParticipants,
+      updatedAt: serverTimestamp()
+    })
+    
+    console.log('참가 신청 성공:', newRequest)
+  } catch (error) {
+    console.error('참가 신청 실패:', error)
+    throw error
+  }
+}
+
+// 참가 신청 승인/거부
+export const handleJoinRequest = async (meetingId, userId, action) => {
+  try {
+    console.log('참가 신청 처리:', { meetingId, userId, action })
+    
+    if (!db) {
+      throw new Error('Firestore 데이터베이스가 초기화되지 않았습니다.')
+    }
+    
+    const meetingRef = doc(db, COLLECTIONS.MEETINGS, meetingId)
+    
+    // 현재 모임 데이터를 가져와서 참가자 상태 업데이트
+    const meetingDoc = await getDoc(meetingRef)
+    if (!meetingDoc.exists()) {
+      throw new Error('모임을 찾을 수 없습니다')
+    }
+    
+    const meetingData = meetingDoc.data()
+    const updatedParticipants = meetingData.participants.map(p => {
+      if (p.userId === userId && p.status === 'pending') {
+        return {
+          ...p,
+          status: action === 'approve' ? 'approved' : 'rejected',
+          processedAt: new Date().toISOString()
+        }
+      }
+      return p
+    })
+    
+    await updateDoc(meetingRef, {
+      participants: updatedParticipants,
+      updatedAt: serverTimestamp()
+    })
+    
+    console.log('참가 신청 처리 성공:', { userId, action })
+  } catch (error) {
+    console.error('참가 신청 처리 실패:', error)
+    throw error
+  }
+}
+
+// 참가 신청 취소
+export const cancelJoinRequest = async (meetingId, userId) => {
+  try {
+    console.log('참가 신청 취소:', { meetingId, userId })
+    
+    if (!db) {
+      throw new Error('Firestore 데이터베이스가 초기화되지 않았습니다.')
+    }
+    
+    const meetingRef = doc(db, COLLECTIONS.MEETINGS, meetingId)
+    
+    // 현재 모임 데이터를 가져와서 참가자 제거
+    const meetingDoc = await getDoc(meetingRef)
+    if (!meetingDoc.exists()) {
+      throw new Error('모임을 찾을 수 없습니다')
+    }
+    
+    const meetingData = meetingDoc.data()
+    const updatedParticipants = meetingData.participants.filter(p => !(p.userId === userId && p.status === 'pending'))
+    
+    await updateDoc(meetingRef, {
+      participants: updatedParticipants,
+      updatedAt: serverTimestamp()
+    })
+    
+    console.log('참가 신청 취소 성공:', userId)
+  } catch (error) {
+    console.error('참가 신청 취소 실패:', error)
+    throw error
+  }
+}
