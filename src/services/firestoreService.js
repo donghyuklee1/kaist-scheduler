@@ -89,10 +89,8 @@ export const deleteEvent = async (eventId) => {
 
 // 모든 모임 구독 (공개 모임)
 export const subscribeToMeetings = (callback) => {
-  const q = query(
-    collection(db, COLLECTIONS.MEETINGS),
-    orderBy('createdAt', 'desc')
-  )
+  // orderBy 없이 먼저 시도하고, 실패하면 클라이언트에서 정렬
+  const q = query(collection(db, COLLECTIONS.MEETINGS))
 
   return onSnapshot(q, (snapshot) => {
     console.log('모임 데이터 변경 감지:', snapshot.docs.length, '개 모임')
@@ -104,9 +102,19 @@ export const subscribeToMeetings = (callback) => {
         ...data
       }
     })
+    
+    // 클라이언트에서 생성일 기준으로 정렬
+    meetings.sort((a, b) => {
+      const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0)
+      const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0)
+      return bTime - aTime // 최신순
+    })
+    
     callback(meetings)
   }, (error) => {
     console.error('모임 구독 오류:', error)
+    // 오류 발생 시 빈 배열 반환
+    callback([])
   })
 }
 
@@ -114,6 +122,15 @@ export const subscribeToMeetings = (callback) => {
 export const createMeeting = async (meetingData, userId) => {
   try {
     console.log('모임 생성 시작:', { meetingData, userId })
+    
+    // 필수 필드 검증
+    if (!userId) {
+      throw new Error('사용자 ID가 필요합니다.')
+    }
+    
+    if (!meetingData.title || !meetingData.description) {
+      throw new Error('모임 제목과 설명은 필수입니다.')
+    }
     
     const meetingDoc = {
       ...meetingData,
@@ -126,16 +143,25 @@ export const createMeeting = async (meetingData, userId) => {
         joinedAt: serverTimestamp()
       }],
       availability: {},
-      announcements: []
+      announcements: [],
+      status: meetingData.status || 'open' // 기본 상태 추가
     }
     
     console.log('저장할 모임 데이터:', meetingDoc)
     
+    // Firestore에 문서 추가
     const docRef = await addDoc(collection(db, COLLECTIONS.MEETINGS), meetingDoc)
     console.log('모임 생성 성공, ID:', docRef.id)
+    
+    // 생성된 문서 ID 반환
     return docRef.id
   } catch (error) {
     console.error('모임 생성 실패:', error)
+    console.error('에러 상세:', {
+      code: error.code,
+      message: error.message,
+      stack: error.stack
+    })
     throw error
   }
 }

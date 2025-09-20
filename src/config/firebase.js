@@ -21,6 +21,15 @@ export const auth = getAuth(app)
 // Firestore 인스턴스
 export const db = getFirestore(app)
 
+// Firebase 연결 상태 확인
+export const checkFirebaseConnection = () => {
+  console.log('Firebase 설정 확인:')
+  console.log('- Project ID:', firebaseConfig.projectId)
+  console.log('- Auth Domain:', firebaseConfig.authDomain)
+  console.log('- API Key:', firebaseConfig.apiKey ? '설정됨' : '누락')
+  console.log('- App ID:', firebaseConfig.appId ? '설정됨' : '누락')
+}
+
 // Google Auth Provider
 export const googleProvider = new GoogleAuthProvider()
 // KAIST 도메인 제한 제거 - 모든 Gmail 계정 허용

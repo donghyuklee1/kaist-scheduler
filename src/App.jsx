@@ -18,6 +18,7 @@ const SettingsPage = lazy(() => import('./components/SettingsPage'))
 import { Calendar as CalendarIcon, Grid, Users } from 'lucide-react'
 import { getBuildingById } from './data/buildings'
 import { useAuth } from './contexts/AuthContext'
+import { checkFirebaseConnection } from './config/firebase'
 import { 
   subscribeToUserEvents, 
   subscribeToMeetings, 
@@ -57,8 +58,12 @@ function App() {
 
   // Firestore 실시간 구독 설정
   useEffect(() => {
+    // Firebase 연결 상태 확인
+    checkFirebaseConnection()
+    
     // 모든 모임 구독 (로그인 여부와 관계없이)
     const unsubscribeMeetings = subscribeToMeetings((meetingsData) => {
+      console.log('App.jsx - 모임 데이터 업데이트:', meetingsData.length, '개')
       setMeetings(meetingsData)
     })
 
@@ -133,12 +138,38 @@ function App() {
   const addMeeting = async (meetingData) => {
     try {
       console.log('App.jsx - 모임 생성 시작:', { meetingData, userId: user.uid })
+      
+      // 사용자 인증 확인
+      if (!user || !user.uid) {
+        throw new Error('로그인이 필요합니다.')
+      }
+      
+      // 모임 데이터 검증
+      if (!meetingData.title || !meetingData.description) {
+        throw new Error('모임 제목과 설명을 입력해주세요.')
+      }
+      
       const meetingId = await createMeetingInFirestore(meetingData, user.uid)
       console.log('App.jsx - 모임 생성 완료, ID:', meetingId)
+      
+      // 성공 메시지
+      alert('모임이 성공적으로 생성되었습니다!')
       closeMeetingModal()
     } catch (error) {
       console.error('App.jsx - 모임 생성 실패:', error)
-      alert('모임 생성에 실패했습니다: ' + error.message)
+      console.error('에러 상세:', error)
+      
+      // 사용자 친화적인 에러 메시지
+      let errorMessage = '모임 생성에 실패했습니다.'
+      if (error.message.includes('permission')) {
+        errorMessage = '권한이 없습니다. 다시 로그인해주세요.'
+      } else if (error.message.includes('network')) {
+        errorMessage = '네트워크 연결을 확인해주세요.'
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      alert(errorMessage)
     }
   }
 
