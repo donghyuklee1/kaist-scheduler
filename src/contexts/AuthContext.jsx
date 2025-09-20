@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { onAuthStateChanged } from 'firebase/auth'
+import { onAuthStateChanged, updateProfile as updateFirebaseProfile } from 'firebase/auth'
 import { auth, signInWithGoogle, signOutUser } from '../config/firebase'
 
 const AuthContext = createContext()
@@ -54,12 +54,37 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const updateProfile = async (profileData) => {
+    try {
+      if (!user) {
+        throw new Error('로그인이 필요합니다')
+      }
+
+      await updateFirebaseProfile(user, {
+        displayName: profileData.displayName,
+        photoURL: profileData.photoURL
+      })
+
+      // 추가 정보는 로컬 스토리지에 저장 (Firebase Auth는 제한적)
+      const userData = {
+        ...profileData,
+        uid: user.uid
+      }
+      localStorage.setItem(`user_${user.uid}`, JSON.stringify(userData))
+      
+    } catch (error) {
+      console.error('프로필 업데이트 실패:', error)
+      throw error
+    }
+  }
+
   const value = {
     user,
     loading,
     isKaistUser,
     login,
-    logout
+    logout,
+    updateProfile
   }
 
   return (

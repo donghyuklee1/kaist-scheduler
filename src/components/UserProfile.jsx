@@ -2,10 +2,16 @@ import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { User, LogOut, Settings, Bell, ChevronDown } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import ProfileModal from './ProfileModal'
+import SettingsModal from './SettingsModal'
+import NotificationModal from './NotificationModal'
 
-const UserProfile = () => {
+const UserProfile = ({ meetings = [] }) => {
   const { user, logout, isKaistUser } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
+  const [showProfileModal, setShowProfileModal] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const [showNotificationModal, setShowNotificationModal] = useState(false)
 
   const handleLogout = async () => {
     try {
@@ -84,6 +90,10 @@ const UserProfile = () => {
             <div className="py-2">
               <motion.button
                 whileHover={{ backgroundColor: 'rgba(0, 65, 145, 0.1)' }}
+                onClick={() => {
+                  setShowProfileModal(true)
+                  setIsOpen(false)
+                }}
                 className="w-full flex items-center space-x-3 px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
               >
                 <User className="w-4 h-4" />
@@ -92,6 +102,10 @@ const UserProfile = () => {
 
               <motion.button
                 whileHover={{ backgroundColor: 'rgba(0, 65, 145, 0.1)' }}
+                onClick={() => {
+                  setShowSettingsModal(true)
+                  setIsOpen(false)
+                }}
                 className="w-full flex items-center space-x-3 px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
               >
                 <Settings className="w-4 h-4" />
@@ -100,6 +114,10 @@ const UserProfile = () => {
 
               <motion.button
                 whileHover={{ backgroundColor: 'rgba(0, 65, 145, 0.1)' }}
+                onClick={() => {
+                  setShowNotificationModal(true)
+                  setIsOpen(false)
+                }}
                 className="w-full flex items-center space-x-3 px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
               >
                 <Bell className="w-4 h-4" />
@@ -121,6 +139,23 @@ const UserProfile = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 모달들 */}
+      <ProfileModal 
+        isOpen={showProfileModal} 
+        onClose={() => setShowProfileModal(false)} 
+      />
+      
+      <SettingsModal 
+        isOpen={showSettingsModal} 
+        onClose={() => setShowSettingsModal(false)} 
+      />
+      
+      <NotificationModal 
+        isOpen={showNotificationModal} 
+        onClose={() => setShowNotificationModal(false)}
+        meetings={meetings}
+      />
     </div>
   )
 }

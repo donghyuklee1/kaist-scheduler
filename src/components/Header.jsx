@@ -1,13 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar as CalendarIcon, Grid, Plus, Bell, Sun, Moon, Users } from 'lucide-react'
 import { useDarkMode } from '../hooks/useDarkMode'
 import { useAuth } from '../contexts/AuthContext'
 import UserProfile from './UserProfile'
+import NotificationModal from './NotificationModal'
 
-const Header = ({ view, setView, onAddEvent, onLogin }) => {
+const Header = ({ view, setView, onAddEvent, onLogin, meetings = [] }) => {
   const [isDarkMode, toggleDarkMode] = useDarkMode()
   const { user } = useAuth()
+  const [showNotificationModal, setShowNotificationModal] = useState(false)
 
   return (
     <motion.header
@@ -82,6 +84,7 @@ const Header = ({ view, setView, onAddEvent, onLogin }) => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => setShowNotificationModal(true)}
               className="p-3 bg-white dark:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-kaist-blue dark:hover:text-blue-400"
             >
               <Bell className="w-5 h-5" />
@@ -109,7 +112,7 @@ const Header = ({ view, setView, onAddEvent, onLogin }) => {
 
             {/* 사용자 프로필 또는 로그인 버튼 */}
             {user ? (
-              <UserProfile />
+              <UserProfile meetings={meetings} />
             ) : (
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -124,6 +127,13 @@ const Header = ({ view, setView, onAddEvent, onLogin }) => {
           </div>
         </div>
       </div>
+
+      {/* 알림 모달 */}
+      <NotificationModal 
+        isOpen={showNotificationModal} 
+        onClose={() => setShowNotificationModal(false)}
+        meetings={meetings}
+      />
     </motion.header>
   )
 }
