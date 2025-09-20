@@ -168,7 +168,7 @@ export const createMeeting = async (meetingData, userId) => {
       participants: [{
         userId,
         status: 'owner',
-        joinedAt: serverTimestamp()
+        joinedAt: new Date().toISOString()
       }],
       availability: {},
       announcements: [],
@@ -226,7 +226,7 @@ export const joinMeeting = async (meetingId, userId) => {
       participants: arrayUnion({
         userId,
         status: 'pending',
-        joinedAt: serverTimestamp()
+        joinedAt: new Date().toISOString()
       }),
       updatedAt: serverTimestamp()
     })
@@ -290,7 +290,7 @@ export const addAnnouncement = async (meetingId, announcementData, userId) => {
       id: Date.now().toString(),
       ...announcementData,
       authorId: userId,
-      createdAt: serverTimestamp(),
+      createdAt: new Date().toISOString(),
       priority: announcementData.priority || 'normal'
     }
 
