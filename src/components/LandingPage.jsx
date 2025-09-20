@@ -4,7 +4,7 @@ import { Calendar, Users, Clock, MapPin, ArrowRight, Star, CheckCircle, Sparkles
 import { useDarkMode } from '../hooks/useDarkMode'
 
 const LandingPage = ({ onGetStarted }) => {
-  const { isDarkMode, toggleDarkMode } = useDarkMode()
+  const [isDarkMode, toggleDarkMode] = useDarkMode()
   const features = [
     {
       icon: <Calendar className="w-8 h-8" />,
@@ -38,7 +38,65 @@ const LandingPage = ({ onGetStarted }) => {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Floating Particles */}
+        <div className="absolute inset-0">
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-2 h-2 bg-blue-400/20 dark:bg-blue-300/10 rounded-full"
+              initial={{
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                scale: Math.random() * 0.5 + 0.5,
+              }}
+              animate={{
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                scale: Math.random() * 0.5 + 0.5,
+              }}
+              transition={{
+                duration: Math.random() * 10 + 10,
+                repeat: Infinity,
+                repeatType: "reverse",
+                ease: "linear",
+              }}
+            />
+          ))}
+        </div>
+        
+        {/* Gradient Orbs */}
+        <motion.div
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-purple-400/10 dark:from-blue-500/5 dark:to-purple-500/5 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.6, 0.3],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-purple-400/10 to-pink-400/10 dark:from-purple-500/5 dark:to-pink-500/5 rounded-full blur-3xl"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            opacity: [0.4, 0.7, 0.4],
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-5 dark:opacity-10"></div>
+      </div>
+
       {/* Header */}
       <header className="relative z-10">
         <div className="container mx-auto px-4 py-6">
@@ -47,8 +105,8 @@ const LandingPage = ({ onGetStarted }) => {
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10">
                 <img 
-                  src="/kaist_logo.png" 
-                  alt="KAIST Logo" 
+                  src="/SCR-20250921-cyau.png" 
+                  alt="Compendium Logo" 
                   className="w-full h-full object-contain"
                   onError={(e) => {
                     e.target.style.display = 'none'
@@ -83,10 +141,7 @@ const LandingPage = ({ onGetStarted }) => {
       </header>
 
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-        
+      <div className="relative">
         <div className="relative container mx-auto px-4 py-20">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
