@@ -305,38 +305,6 @@ const LandingPage = ({ onGetStarted }) => {
               </div>
             </motion.div>
 
-            {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20"
-            >
-              <div className="text-center">
-                <div className="text-3xl font-bold text-kaist-blue dark:text-kaist-lightblue mb-2">
-                  100+
-                </div>
-                <div className="text-gray-600 dark:text-gray-400">
-                  활성 사용자
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-kaist-blue dark:text-kaist-lightblue mb-2">
-                  50+
-                </div>
-                <div className="text-gray-600 dark:text-gray-400">
-                  진행된 모임
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-kaist-blue dark:text-kaist-lightblue mb-2">
-                  24/7
-                </div>
-                <div className="text-gray-600 dark:text-gray-400">
-                  실시간 동기화
-                </div>
-              </div>
-            </motion.div>
           </motion.div>
         </div>
       </div>
