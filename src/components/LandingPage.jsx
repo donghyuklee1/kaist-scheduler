@@ -82,23 +82,56 @@ const LandingPage = ({ onGetStarted }) => {
               </p>
             </motion.div>
 
-            {/* Main CTA Button */}
+            {/* Contact Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
               className="mb-16"
             >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={onGetStarted}
-                className="btn-primary text-xl px-12 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 mx-auto"
-              >
-                <Sparkles className="w-6 h-6" />
-                <span>간편하게 시작하기</span>
-                <ArrowRight className="w-6 h-6" />
-              </motion.button>
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 text-center text-white shadow-2xl">
+                <h2 className="text-3xl font-bold mb-4">지금 바로 시작해보세요!</h2>
+                <p className="text-lg mb-6 opacity-90">
+                  간편한 로그인으로 모든 기능을 무료로 이용하실 수 있습니다
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={onGetStarted}
+                  className="bg-white text-gray-900 px-8 py-4 rounded-2xl font-semibold text-lg flex items-center space-x-3 mx-auto shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  <span>간편하게 시작하기</span>
+                  <ArrowRight className="w-5 h-5" />
+                </motion.button>
+              </div>
+              
+              {/* Contact Info */}
+              <div className="mt-12 text-center">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">문의사항이 있으신가요?</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  서비스 개선이나 버그 신고, 새로운 기능 제안 등 언제든지 연락주세요
+                </p>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center justify-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
+                      <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                      </svg>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">이메일</p>
+                      <a 
+                        href="mailto:dhlee4832@kaist.ac.kr"
+                        className="text-lg font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                      >
+                        dhlee4832@kaist.ac.kr
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </motion.div>
 
             {/* Stats */}
