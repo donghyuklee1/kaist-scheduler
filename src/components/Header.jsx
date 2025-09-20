@@ -21,9 +21,11 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Title */}
-          <motion.div
+          <motion.button
             whileHover={{ scale: 1.05 }}
-            className="flex items-center space-x-3"
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setView('calendar')}
+            className="flex items-center space-x-3 cursor-pointer"
           >
             <div className="w-10 h-10 bg-gradient-to-br from-kaist-blue to-kaist-lightblue rounded-xl flex items-center justify-center">
               <CalendarIcon className="w-6 h-6 text-white" />
@@ -32,7 +34,7 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
               <h1 className="text-2xl font-bold text-kaist-blue">KAIST Scheduler</h1>
               <p className="text-sm text-gray-600">스마트한 일정 관리</p>
             </div>
-          </motion.div>
+          </motion.button>
 
           {/* View Toggle */}
           <div className="flex items-center space-x-2">

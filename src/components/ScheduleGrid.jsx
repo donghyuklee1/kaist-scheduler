@@ -88,16 +88,6 @@ const ScheduleGrid = ({ events, onEventClick, onAddEvent }) => {
         >
           일정 목록
         </motion.h2>
-        
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onAddEvent}
-          className="btn-primary flex items-center space-x-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>일정 추가</span>
-        </motion.button>
       </div>
 
       {/* Filters */}
