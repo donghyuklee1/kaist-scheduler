@@ -215,7 +215,7 @@ const LandingPage = ({ onGetStarted }) => {
               </div>
               <div className="text-left">
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                  Compendium<span className="text-green-500">β</span>
+                  Compendium<span className="text-green-500 text-xs align-super">β</span>
                 </h1>
                 <p className="text-xs text-gray-600 dark:text-gray-400">간편한 일정 관리</p>
               </div>
@@ -270,7 +270,7 @@ const LandingPage = ({ onGetStarted }) => {
                 </div>
               </div>
               <h1 className="text-6xl font-bold text-gray-900 dark:text-white mb-4">
-                Compendium<span className="text-green-500">β</span>
+                Compendium<span className="text-green-500 text-2xl align-super">β</span>
               </h1>
               <p className="text-xl text-gray-600 dark:text-gray-300 mb-2">
                 간편한 일정 관리
