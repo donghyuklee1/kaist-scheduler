@@ -97,14 +97,14 @@ const NotificationModal = ({ isOpen, onClose, meetings = [] }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        className="fixed top-20 right-4 z-50"
         onClick={onClose}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[70vh] flex flex-col"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-80 max-h-[60vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}

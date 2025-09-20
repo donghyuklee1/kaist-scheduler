@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, Clock, Users, Bell, TrendingUp, MapPin, ChevronRight, AlertCircle, CheckCircle, Calendar as CalendarIcon } from 'lucide-react'
+import { Calendar, Clock, Users, Bell, TrendingUp, MapPin, ChevronRight, AlertCircle, CheckCircle, Calendar as CalendarIcon, X } from 'lucide-react'
 import { format, isToday, isTomorrow, isYesterday, addDays, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns'
 import { ko } from 'date-fns/locale'
 
@@ -15,6 +15,8 @@ const Dashboard = ({
   currentUser 
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [showDateEvents, setShowDateEvents] = useState(false)
+  const [selectedDateForEvents, setSelectedDateForEvents] = useState(null)
 
   // 실시간 시간 업데이트
   useEffect(() => {
@@ -23,6 +25,20 @@ const Dashboard = ({
     }, 1000)
     return () => clearInterval(timer)
   }, [])
+
+  // 날짜 클릭 핸들러
+  const handleDateClick = (date) => {
+    setSelectedDateForEvents(date)
+    setShowDateEvents(true)
+  }
+
+  // 특정 날짜의 일정 필터링
+  const getEventsForDate = (date) => {
+    return events.filter(event => {
+      const eventDate = new Date(event.date)
+      return eventDate.toDateString() === date.toDateString()
+    })
+  }
 
   // 다가오는 일정 (오늘부터 7일간)
   const upcomingEvents = events
@@ -146,7 +162,7 @@ const Dashboard = ({
                   <motion.div
                     key={day.toISOString()}
                     whileHover={{ scale: 1.02 }}
-                    onClick={() => onDateClick(day)}
+                    onClick={() => handleDateClick(day)}
                     className={`p-3 rounded-xl cursor-pointer transition-all duration-200 ${
                       isSelected
                         ? 'bg-kaist-blue text-white shadow-lg'
@@ -433,6 +449,118 @@ const Dashboard = ({
           </div>
         </div>
       </motion.div>
+
+      {/* 날짜별 일정 목록 모달 */}
+      {showDateEvents && selectedDateForEvents && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setShowDateEvents(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 헤더 */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-kaist-blue rounded-xl flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                    {format(selectedDateForEvents, 'yyyy년 M월 d일 (E)', { locale: ko })}
+                  </h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {getEventsForDate(selectedDateForEvents).length}개의 일정
+                  </p>
+                </div>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setShowDateEvents(false)}
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </motion.button>
+            </div>
+
+            {/* 일정 목록 */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {getEventsForDate(selectedDateForEvents).length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Calendar className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">이 날에는 일정이 없습니다</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    새로운 일정을 추가해보세요
+                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      setShowDateEvents(false)
+                      onEventClick({ date: selectedDateForEvents })
+                    }}
+                    className="btn-primary"
+                  >
+                    일정 추가하기
+                  </motion.button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {getEventsForDate(selectedDateForEvents).map((event) => (
+                    <motion.div
+                      key={event.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      whileHover={{ scale: 1.02 }}
+                      onClick={() => {
+                        setShowDateEvents(false)
+                        onEventClick(event)
+                      }}
+                      className="p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3 flex-1 pr-4">
+                          <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
+                            <Calendar className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-800 dark:text-white">
+                              {event.title}
+                            </h3>
+                            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                              {event.time && <span>• {event.time}</span>}
+                              {event.location && (
+                                <>
+                                  <span>•</span>
+                                  <div className="flex items-center">
+                                    <MapPin className="w-3 h-3 mr-1" />
+                                    <span>{event.location}</span>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   )
 }
