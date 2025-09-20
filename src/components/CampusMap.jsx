@@ -55,7 +55,7 @@ const CampusMap = ({ onBuildingClick, selectedBuilding, events = [] }) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setFilterType(filterType === type ? 'all' : type)}
-            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-1 ${
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 ${
               filterType === type
                 ? 'bg-kaist-blue text-white'
                 : 'bg-white text-gray-600 hover:bg-gray-50'

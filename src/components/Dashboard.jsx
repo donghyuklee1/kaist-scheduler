@@ -211,7 +211,7 @@ const Dashboard = ({
                     className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl"
                   >
                     <div className="flex items-start justify-between">
-                      <div className="flex-1">
+                      <div className="flex-1 pr-4">
                         <div className="flex items-center space-x-2 mb-2">
                           <span className="text-xs px-2 py-1 bg-red-500 text-white rounded-full font-medium">
                             긴급
@@ -227,7 +227,7 @@ const Dashboard = ({
                           {announcement.content}
                         </p>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-red-400 mt-1" />
+                      <ChevronRight className="w-4 h-4 text-red-400 mt-1 flex-shrink-0" />
                     </div>
                   </motion.div>
                 ))
@@ -270,11 +270,11 @@ const Dashboard = ({
                     className="p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-3 flex-1 pr-4">
                         <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
                           <Calendar className="w-5 h-5 text-white" />
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <h3 className="font-semibold text-gray-800 dark:text-white">
                             {event.title}
                           </h3>
@@ -293,7 +293,7 @@ const Dashboard = ({
                           </div>
                         </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                      <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
                     </div>
                   </motion.div>
                 ))
@@ -339,11 +339,11 @@ const Dashboard = ({
                     className="p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl hover:shadow-md transition-all duration-200"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-3 flex-1 pr-4">
                         <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
                           <Users className="w-5 h-5 text-white" />
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <h3 className="font-semibold text-gray-800 dark:text-white">
                             {meeting.title}
                           </h3>
@@ -363,7 +363,7 @@ const Dashboard = ({
                           </div>
                         </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                      <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
                     </div>
                   </motion.div>
                 ))
