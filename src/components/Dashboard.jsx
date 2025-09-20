@@ -202,10 +202,15 @@ const Dashboard = ({
             className="glass-effect rounded-2xl p-6 shadow-xl"
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => onViewChange('meetings')}
+                className="flex items-center text-xl font-bold text-gray-800 dark:text-white hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
+              >
                 <Bell className="w-5 h-5 mr-2 text-red-500" />
                 중요 공지사항
-              </h2>
+              </motion.button>
               <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                 <AlertCircle className="w-4 h-4 mr-1" />
                 {importantAnnouncements.length}개
@@ -218,7 +223,15 @@ const Dashboard = ({
                   <motion.div
                     key={announcement.id}
                     whileHover={{ scale: 1.02 }}
-                    className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl"
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      // 해당 모임 찾기
+                      const meeting = meetings.find(m => m.title === announcement.meetingTitle)
+                      if (meeting && onMeetingClick) {
+                        onMeetingClick(meeting)
+                      }
+                    }}
+                    className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 pr-4">
@@ -258,10 +271,15 @@ const Dashboard = ({
             className="glass-effect rounded-2xl p-6 shadow-xl"
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => onViewChange('schedule')}
+                className="flex items-center text-xl font-bold text-gray-800 dark:text-white hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer"
+              >
                 <Clock className="w-5 h-5 mr-2 text-green-500" />
                 다가오는 일정
-              </h2>
+              </motion.button>
               <button
                 onClick={() => onEventClick()}
                 className="text-sm text-kaist-blue hover:text-kaist-lightblue transition-colors"
@@ -276,6 +294,7 @@ const Dashboard = ({
                   <motion.div
                     key={event.id}
                     whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => onEventClick(event)}
                     className="p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
                   >
@@ -330,10 +349,15 @@ const Dashboard = ({
             className="glass-effect rounded-2xl p-6 shadow-xl"
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => onViewChange('meetings')}
+                className="flex items-center text-xl font-bold text-gray-800 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer"
+              >
                 <Users className="w-5 h-5 mr-2 text-purple-500" />
                 참여중인 모임
-              </h2>
+              </motion.button>
               <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                 <CheckCircle className="w-4 h-4 mr-1" />
                 {joinedMeetings.length}개
