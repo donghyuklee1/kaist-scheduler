@@ -56,8 +56,20 @@ const LandingPage = ({ onGetStarted }) => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="mb-8"
             >
-              <div className="w-20 h-20 bg-gradient-to-br from-kaist-blue to-kaist-lightblue rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl">
-                <Calendar className="w-10 h-10 text-white" />
+              <div className="w-24 h-24 mx-auto mb-6 shadow-xl">
+                <img 
+                  src="/kaist_logo.png" 
+                  alt="KAIST Logo" 
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    // 로고 로드 실패 시 기본 아이콘 표시
+                    e.target.style.display = 'none'
+                    e.target.nextElementSibling.style.display = 'flex'
+                  }}
+                />
+                <div className="w-full h-full bg-gradient-to-br from-kaist-blue to-kaist-lightblue rounded-2xl flex items-center justify-center hidden">
+                  <Calendar className="w-10 h-10 text-white" />
+                </div>
               </div>
               <h1 className="text-6xl font-bold text-gray-900 dark:text-white mb-4">
                 KAIST Scheduler

@@ -25,38 +25,94 @@ export const COLLECTIONS = {
 
 // 사용자별 이벤트 구독
 export const subscribeToUserEvents = (userId, callback) => {
-  if (!userId) {
+  try {
+    if (!userId) {
+      console.log('사용자 ID가 없어서 이벤트 구독을 중단합니다.')
+      callback([])
+      return () => {}
+    }
+
+    // Firebase 설정 확인
+    if (!db) {
+      console.error('❌ Firestore 데이터베이스가 초기화되지 않았습니다.')
+      callback([])
+      return () => {}
+    }
+
+    console.log('사용자 이벤트 구독 시작:', userId)
+
+    const q = query(
+      collection(db, COLLECTIONS.EVENTS),
+      where('userId', '==', userId),
+      orderBy('date', 'asc')
+    )
+
+    return onSnapshot(q, (snapshot) => {
+      console.log('사용자 이벤트 데이터 변경 감지:', snapshot.docs.length, '개 이벤트')
+      const events = snapshot.docs.map(doc => {
+        const data = doc.data()
+        console.log('이벤트 데이터:', { id: doc.id, title: data.title, date: data.date })
+        return {
+          id: doc.id,
+          ...data
+        }
+      })
+      callback(events)
+    }, (error) => {
+      console.error('사용자 이벤트 구독 오류:', error)
+      console.error('에러 상세:', {
+        code: error.code,
+        message: error.message,
+        stack: error.stack
+      })
+      
+      // Firebase 설정 문제인지 확인
+      if (error.code === 'permission-denied') {
+        console.error('❌ Firestore 보안 규칙 문제입니다. Firebase Console에서 보안 규칙을 설정해주세요.')
+      } else if (error.code === 'unavailable') {
+        console.error('❌ Firebase 서비스에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.')
+      } else if (error.message.includes('400')) {
+        console.error('❌ Firebase 설정이 잘못되었습니다. 환경 변수를 확인해주세요.')
+      }
+      
+      callback([])
+    })
+  } catch (error) {
+    console.error('사용자 이벤트 구독 초기화 오류:', error)
     callback([])
     return () => {}
   }
-
-  const q = query(
-    collection(db, COLLECTIONS.EVENTS),
-    where('userId', '==', userId),
-    orderBy('date', 'asc')
-  )
-
-  return onSnapshot(q, (snapshot) => {
-    const events = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }))
-    callback(events)
-  })
 }
 
 // 이벤트 생성
 export const createEvent = async (eventData, userId) => {
   try {
-    const docRef = await addDoc(collection(db, COLLECTIONS.EVENTS), {
+    console.log('이벤트 생성 시작:', { eventData, userId })
+    
+    // Firebase 설정 확인
+    if (!db) {
+      throw new Error('Firestore 데이터베이스가 초기화되지 않았습니다.')
+    }
+    
+    const eventDoc = {
       ...eventData,
       userId,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
-    })
+    }
+    
+    console.log('저장할 이벤트 데이터:', eventDoc)
+    
+    const docRef = await addDoc(collection(db, COLLECTIONS.EVENTS), eventDoc)
+    console.log('이벤트 생성 성공, ID:', docRef.id)
     return docRef.id
   } catch (error) {
     console.error('이벤트 생성 실패:', error)
+    console.error('에러 상세:', {
+      code: error.code,
+      message: error.message,
+      stack: error.stack
+    })
     throw error
   }
 }
