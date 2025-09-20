@@ -138,14 +138,13 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-kaist-blue bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-kaist-blue bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 appearance-none"
             >
               <option value="all">모든 상태</option>
               <option value="open">모집중</option>
               <option value="closed">모집마감</option>
               <option value="full">정원초과</option>
             </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           </div>
 
           {/* 학기 필터 */}
@@ -154,7 +153,7 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-kaist-blue bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-kaist-blue bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 appearance-none"
             >
               <option value="all">모든 학기</option>
               <option value="2025-1">2025년 1학기</option>
@@ -162,7 +161,6 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
               <option value="2024-1">2024년 1학기</option>
               <option value="2024-2">2024년 2학기</option>
             </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           </div>
 
           {/* 카테고리 태그들 */}
