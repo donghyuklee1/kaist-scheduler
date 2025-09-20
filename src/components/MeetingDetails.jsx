@@ -14,9 +14,30 @@ import {
   cancelJoinRequest,
   getParticipantsCountForSlot 
 } from '../services/firestoreService'
+import TimeCoordination from './TimeCoordination'
 
 const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
-  const [activeTab, setActiveTab] = useState('schedule') // 'schedule', 'attendance', 'announcements', 'requests'
+  // 사용자 상태 확인
+  const isOwner = isMeetingOwner(meeting, currentUser?.uid)
+  const isParticipant = isMeetingParticipant(meeting, currentUser?.uid)
+  const hasRequest = hasPendingRequest(meeting, currentUser?.uid)
+  const canViewSchedule = isOwner || isParticipant
+
+  // 시간 조율 완료 여부 확인
+  const hasCompletedTimeCoordination = () => {
+    if (!currentUser?.uid || !meeting?.availability) return false
+    const userAvailability = meeting.availability[currentUser.uid]
+    return userAvailability && userAvailability.length > 0
+  }
+
+  // 기본 탭 설정: 시간 조율 완료 시 세부사항 탭, 미완료 시 시간표 탭
+  const getDefaultTab = () => {
+    if (!canViewSchedule) return 'announcements'
+    if (hasCompletedTimeCoordination()) return 'schedule'
+    return 'schedule'
+  }
+
+  const [activeTab, setActiveTab] = useState(getDefaultTab())
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false)
   const [announcementForm, setAnnouncementForm] = useState({
     title: '',
@@ -203,12 +224,6 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
       setIsLoading(false)
     }
   }
-
-  // 사용자 상태 확인
-  const isOwner = isMeetingOwner(meeting, currentUser?.uid)
-  const isParticipant = isMeetingParticipant(meeting, currentUser?.uid)
-  const hasRequest = hasPendingRequest(meeting, currentUser?.uid)
-  const canViewSchedule = isOwner || isParticipant
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800">
@@ -437,6 +452,22 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                 </motion.button>
               )}
 
+              {canViewSchedule && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setActiveTab('timeCoordination')}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 ${
+                    activeTab === 'timeCoordination'
+                      ? 'bg-kaist-blue text-white shadow-lg'
+                      : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <Clock className="w-4 h-4" />
+                  <span className="font-medium">시간 조율</span>
+                </motion.button>
+              )}
+
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -482,9 +513,22 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
               transition={{ duration: 0.3 }}
             >
               <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                  전체 참여자 시간표
-                </h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                    전체 참여자 시간표
+                  </h3>
+                  {canViewSchedule && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setActiveTab('timeCoordination')}
+                      className="flex items-center space-x-2 px-4 py-2 bg-kaist-blue text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                      <Clock className="w-4 h-4" />
+                      <span>시간표 조율하기</span>
+                    </motion.button>
+                  )}
+                </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   진한 색일수록 많은 사람이 가능한 시간입니다
                 </p>
@@ -629,6 +673,21 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                   </div>
                 ))}
               </div>
+            </motion.div>
+          )}
+
+          {/* 시간 조율 탭 */}
+          {activeTab === 'timeCoordination' && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <TimeCoordination
+                meeting={meeting}
+                currentUser={currentUser}
+                onBack={() => setActiveTab('schedule')}
+              />
             </motion.div>
           )}
 
