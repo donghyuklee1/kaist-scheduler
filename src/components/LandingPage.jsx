@@ -43,16 +43,29 @@ const LandingPage = ({ onGetStarted }) => {
       <div className="absolute inset-0 overflow-hidden">
         {/* Radial Particles */}
         <div className="absolute inset-0">
-          {[...Array(30)].map((_, i) => {
-            const angle = (i / 30) * Math.PI * 2; // 360도 분할
-            const distance = 200 + Math.random() * 300; // 중앙에서의 거리
+          {[...Array(80)].map((_, i) => {
+            const angle = (i / 80) * Math.PI * 2; // 360도 분할
+            const distance = 150 + Math.random() * 400; // 중앙에서의 거리
             const centerX = window.innerWidth / 2;
             const centerY = window.innerHeight / 2;
+            
+            // 다양한 파티클 크기와 색상
+            const sizes = ['w-1 h-1', 'w-1.5 h-1.5', 'w-2 h-2', 'w-1 h-1', 'w-1.5 h-1.5'];
+            const colors = [
+              'bg-blue-400/40 dark:bg-blue-300/30',
+              'bg-purple-400/40 dark:bg-purple-300/30', 
+              'bg-pink-400/40 dark:bg-pink-300/30',
+              'bg-cyan-400/40 dark:bg-cyan-300/30',
+              'bg-indigo-400/40 dark:bg-indigo-300/30'
+            ];
+            
+            const sizeClass = sizes[i % sizes.length];
+            const colorClass = colors[i % colors.length];
             
             return (
               <motion.div
                 key={i}
-                className="absolute w-1.5 h-1.5 bg-blue-400/30 dark:bg-blue-300/20 rounded-full"
+                className={`absolute ${sizeClass} ${colorClass} rounded-full`}
                 initial={{
                   x: centerX,
                   y: centerY,
@@ -62,14 +75,56 @@ const LandingPage = ({ onGetStarted }) => {
                 animate={{
                   x: centerX + Math.cos(angle) * distance,
                   y: centerY + Math.sin(angle) * distance,
-                  scale: [0, 1, 0.8],
-                  opacity: [0, 1, 0],
+                  scale: [0, 1.2, 0.6],
+                  opacity: [0, 0.8, 0],
                 }}
                 transition={{
-                  duration: 3 + Math.random() * 2,
+                  duration: 2.5 + Math.random() * 3,
                   repeat: Infinity,
-                  delay: Math.random() * 2,
+                  delay: Math.random() * 3,
                   ease: "easeOut",
+                }}
+              />
+            );
+          })}
+        </div>
+        
+        {/* Additional Floating Particles */}
+        <div className="absolute inset-0">
+          {[...Array(40)].map((_, i) => {
+            const startX = Math.random() * window.innerWidth;
+            const startY = Math.random() * window.innerHeight;
+            const endX = startX + (Math.random() - 0.5) * 200;
+            const endY = startY + (Math.random() - 0.5) * 200;
+            
+            const colors = [
+              'bg-blue-300/20 dark:bg-blue-400/15',
+              'bg-purple-300/20 dark:bg-purple-400/15',
+              'bg-pink-300/20 dark:bg-pink-400/15',
+              'bg-cyan-300/20 dark:bg-cyan-400/15'
+            ];
+            
+            return (
+              <motion.div
+                key={`floating-${i}`}
+                className={`absolute w-1 h-1 ${colors[i % colors.length]} rounded-full`}
+                initial={{
+                  x: startX,
+                  y: startY,
+                  scale: 0,
+                  opacity: 0,
+                }}
+                animate={{
+                  x: endX,
+                  y: endY,
+                  scale: [0, 1, 0],
+                  opacity: [0, 0.6, 0],
+                }}
+                transition={{
+                  duration: 4 + Math.random() * 4,
+                  repeat: Infinity,
+                  delay: Math.random() * 5,
+                  ease: "easeInOut",
                 }}
               />
             );
@@ -78,25 +133,57 @@ const LandingPage = ({ onGetStarted }) => {
         
         {/* Gradient Orbs */}
         <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-purple-400/10 dark:from-blue-500/5 dark:to-purple-500/5 rounded-full blur-3xl"
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/15 to-purple-400/15 dark:from-blue-500/8 dark:to-purple-500/8 rounded-full blur-3xl"
           animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.6, 0.3],
+            scale: [1, 1.3, 0.8, 1],
+            opacity: [0.3, 0.7, 0.2, 0.3],
+            x: [0, 50, -30, 0],
+            y: [0, -30, 40, 0],
           }}
           transition={{
-            duration: 8,
+            duration: 12,
             repeat: Infinity,
             ease: "easeInOut",
           }}
         />
         <motion.div
-          className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-purple-400/10 to-pink-400/10 dark:from-purple-500/5 dark:to-pink-500/5 rounded-full blur-3xl"
+          className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-purple-400/15 to-pink-400/15 dark:from-purple-500/8 dark:to-pink-500/8 rounded-full blur-3xl"
           animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.4, 0.7, 0.4],
+            scale: [1.2, 0.9, 1.4, 1.2],
+            opacity: [0.4, 0.8, 0.2, 0.4],
+            x: [0, -40, 60, 0],
+            y: [0, 50, -20, 0],
           }}
           transition={{
-            duration: 6,
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute top-1/2 right-1/3 w-64 h-64 bg-gradient-to-r from-cyan-400/12 to-blue-400/12 dark:from-cyan-500/6 dark:to-blue-500/6 rounded-full blur-3xl"
+          animate={{
+            scale: [0.8, 1.2, 1, 0.8],
+            opacity: [0.2, 0.6, 0.3, 0.2],
+            x: [0, 30, -50, 0],
+            y: [0, -40, 30, 0],
+          }}
+          transition={{
+            duration: 14,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-1/3 left-1/2 w-72 h-72 bg-gradient-to-r from-pink-400/12 to-purple-400/12 dark:from-pink-500/6 dark:to-purple-500/6 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 0.7, 1.3, 1],
+            opacity: [0.3, 0.7, 0.2, 0.3],
+            x: [0, -60, 40, 0],
+            y: [0, 30, -50, 0],
+          }}
+          transition={{
+            duration: 16,
             repeat: Infinity,
             ease: "easeInOut",
           }}
