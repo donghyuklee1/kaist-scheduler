@@ -82,6 +82,7 @@ const MeetingModal = ({ meeting, onSave, onClose, currentUser }) => {
     }
 
     onSave(meetingData)
+    onClose() // 모달 자동 닫기
   }
 
   const handleBuildingChange = (buildingId) => {
