@@ -199,7 +199,7 @@ const LandingPage = ({ onGetStarted }) => {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10">
+              <div className="relative w-10 h-10">
                 <img 
                   src="/Adobe Express - file.png" 
                   alt="Compendium Logo" 
@@ -211,6 +211,10 @@ const LandingPage = ({ onGetStarted }) => {
                 />
                 <div className="w-full h-full bg-gradient-to-br from-kaist-blue to-kaist-lightblue rounded-xl flex items-center justify-center hidden">
                   <Calendar className="w-6 h-6 text-white" />
+                </div>
+                {/* Beta Badge */}
+                <div className="absolute -top-1 -right-1 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold shadow-sm">
+                  BETA
                 </div>
               </div>
               <div className="text-left">
@@ -252,7 +256,7 @@ const LandingPage = ({ onGetStarted }) => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="mb-8"
             >
-              <div className="w-40 h-40 mx-auto mb-4">
+              <div className="relative w-40 h-40 mx-auto mb-4">
                 <img 
                   src="/Adobe Express - file.png" 
                   alt="Compendium Logo" 
@@ -265,6 +269,10 @@ const LandingPage = ({ onGetStarted }) => {
                 />
                 <div className="w-full h-full bg-gradient-to-br from-kaist-blue to-kaist-lightblue rounded-2xl flex items-center justify-center hidden">
                   <Calendar className="w-10 h-10 text-white" />
+                </div>
+                {/* Beta Badge */}
+                <div className="absolute -top-2 -right-2 bg-green-500 text-white text-sm px-2 py-1 rounded-full font-bold shadow-lg">
+                  BETA
                 </div>
               </div>
               <h1 className="text-6xl font-bold text-gray-900 dark:text-white mb-4">
