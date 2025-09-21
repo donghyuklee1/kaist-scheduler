@@ -916,6 +916,11 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                 const optimalTimes = getOptimalMeetingTimes(meeting)
                 const hasSuggestedSchedule = meeting?.suggestedSchedule
                 
+                // 디버깅을 위한 로그
+                console.log('Meeting data for optimal times:', meeting)
+                console.log('Optimal times result:', optimalTimes)
+                console.log('Has suggested schedule:', hasSuggestedSchedule)
+                
                 return (
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-3">
