@@ -727,7 +727,7 @@ export const submitAttendanceCode = async (meetingId, userId, code) => {
     // 출석자 목록에 추가
     const newAttendee = {
       userId: userId,
-      timestamp: serverTimestamp()
+      timestamp: new Date().toISOString()
     }
     
     await updateDoc(meetingRef, {
