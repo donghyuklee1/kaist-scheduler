@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import UserProfile from './UserProfile'
 import NotificationModal from './NotificationModal'
 
-const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateToProfile, onNavigateToSettings }) => {
+const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], notifications = [], onNavigateToProfile, onNavigateToSettings, onMarkNotificationAsRead, onMarkAllNotificationsAsRead }) => {
   const [isDarkMode, toggleDarkMode] = useDarkMode()
   const { user } = useAuth()
   const [showNotificationModal, setShowNotificationModal] = useState(false)
@@ -123,14 +123,7 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
                 <Bell className="w-5 h-5" />
                 {/* 읽지 않은 알림 개수 표시 */}
                 {(() => {
-                  const unreadCount = meetings.reduce((count, meeting) => {
-                    if (meeting.announcements && Array.isArray(meeting.announcements)) {
-                      return count + meeting.announcements.filter(announcement => 
-                        (announcement.priority === 'high' || announcement.priority === 'urgent')
-                      ).length
-                    }
-                    return count
-                  }, 0)
+                  const unreadCount = notifications.filter(notification => !notification.isRead).length
                   
                   return unreadCount > 0 ? (
                     <motion.div
@@ -277,14 +270,7 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
                     <Bell className="w-5 h-5" />
                     <span className="font-medium">알림</span>
                     {(() => {
-                      const unreadCount = meetings.reduce((count, meeting) => {
-                        if (meeting.announcements && Array.isArray(meeting.announcements)) {
-                          return count + meeting.announcements.filter(announcement => 
-                            (announcement.priority === 'high' || announcement.priority === 'urgent')
-                          ).length
-                        }
-                        return count
-                      }, 0)
+                      const unreadCount = notifications.filter(notification => !notification.isRead).length
                       
                       return unreadCount > 0 ? (
                         <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full ml-auto">
@@ -347,6 +333,9 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
         isOpen={showNotificationModal} 
         onClose={() => setShowNotificationModal(false)}
         meetings={meetings}
+        notifications={notifications}
+        onMarkNotificationAsRead={onMarkNotificationAsRead}
+        onMarkAllNotificationsAsRead={onMarkAllNotificationsAsRead}
       />
     </>
   )

@@ -4,61 +4,25 @@ import { X, Bell, AlertCircle, CheckCircle, Clock, Users, Calendar } from 'lucid
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 
-const NotificationModal = ({ isOpen, onClose, meetings = [] }) => {
-  const [notifications, setNotifications] = useState([])
+const NotificationModal = ({ isOpen, onClose, meetings = [], notifications = [], onMarkNotificationAsRead, onMarkAllNotificationsAsRead }) => {
   const [unreadCount, setUnreadCount] = useState(0)
 
-  // 중요 공지사항이 있는 모임들을 알림으로 변환
+  // 읽지 않은 알림 개수 업데이트
   useEffect(() => {
-    const importantAnnouncements = []
-    
-    meetings.forEach(meeting => {
-      if (meeting.announcements && Array.isArray(meeting.announcements)) {
-        meeting.announcements.forEach(announcement => {
-          if (announcement.priority === 'high' || announcement.priority === 'urgent') {
-            importantAnnouncements.push({
-              id: `${meeting.id}-${announcement.id}`,
-              type: 'announcement',
-              title: announcement.title,
-              content: announcement.content,
-              priority: announcement.priority,
-              meetingTitle: meeting.title,
-              meetingId: meeting.id,
-              createdAt: announcement.createdAt,
-              isRead: false
-            })
-          }
-        })
-      }
-    })
-
-    // 생성일 기준으로 정렬 (최신순)
-    importantAnnouncements.sort((a, b) => {
-      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt)
-      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt)
-      return dateB - dateA
-    })
-
-    setNotifications(importantAnnouncements)
-    setUnreadCount(importantAnnouncements.filter(n => !n.isRead).length)
-  }, [meetings])
+    const unread = notifications.filter(notification => !notification.isRead).length
+    setUnreadCount(unread)
+  }, [notifications])
 
   const markAsRead = (notificationId) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === notificationId 
-          ? { ...notification, isRead: true }
-          : notification
-      )
-    )
-    setUnreadCount(prev => Math.max(0, prev - 1))
+    if (onMarkNotificationAsRead) {
+      onMarkNotificationAsRead(notificationId)
+    }
   }
 
   const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, isRead: true }))
-    )
-    setUnreadCount(0)
+    if (onMarkAllNotificationsAsRead) {
+      onMarkAllNotificationsAsRead()
+    }
   }
 
   const getPriorityColor = (priority) => {

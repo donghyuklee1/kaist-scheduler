@@ -82,7 +82,7 @@ const Dashboard = ({
         meetingId: meeting.id
       })) || []
     )
-    .filter(announcement => announcement.priority === 'high')
+    .filter(announcement => announcement.priority === 'high' || announcement.priority === 'urgent')
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 3)
 
