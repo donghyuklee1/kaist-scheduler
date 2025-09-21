@@ -107,47 +107,50 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
   return (
     <div className="space-y-6">
       {/* 헤더 */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">모임</h2>
-          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">
-            다양한 주제의 모임과 스터디에 참여해보세요
-          </p>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">모임</h2>
+            <p className="text-xs sm:text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">
+              다양한 주제의 모임과 스터디에 참여해보세요
+            </p>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onCreateMeeting}
+            className="btn-primary flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-2 md:py-3"
+          >
+            <Plus className="w-4 h-4 md:w-5 md:h-5" />
+            <span className="text-xs md:text-base hidden sm:inline">모임 개설하기</span>
+            <span className="text-xs md:text-base sm:hidden">개설</span>
+          </motion.button>
         </div>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onCreateMeeting}
-          className="btn-primary flex items-center space-x-2 px-4 py-3"
-        >
-          <Plus className="w-4 h-4 md:w-5 md:h-5" />
-          <span className="text-sm md:text-base">모임 개설하기</span>
-        </motion.button>
       </div>
 
       {/* 검색 및 필터 */}
       <div className="space-y-4">
         {/* 검색바 */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 md:pl-10 pr-4 py-2 md:py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-kaist-blue focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm md:text-base"
+            className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-kaist-blue focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
             placeholder="모임 검색..."
           />
         </div>
 
         {/* 필터 및 카테고리 */}
-        <div className="flex flex-wrap items-center gap-2 md:gap-4">
+        <div className="flex flex-wrap items-center gap-2">
           {/* 상태 필터 */}
           <div className="relative">
-            <Filter className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-gray-400" />
+            <Filter className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="pl-7 md:pl-10 pr-3 md:pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-kaist-blue bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 appearance-none text-sm md:text-base"
+              className="pl-7 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-kaist-blue bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 appearance-none text-sm"
             >
               <option value="all">모든 상태</option>
               <option value="open">모집중</option>
@@ -158,11 +161,11 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
 
           {/* 학기 필터 */}
           <div className="relative">
-            <Calendar className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-gray-400" />
+            <Calendar className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="pl-7 md:pl-10 pr-3 md:pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-kaist-blue bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 appearance-none text-sm md:text-base"
+              className="pl-7 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-kaist-blue bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 appearance-none text-sm"
             >
               <option value="all">모든 학기</option>
               <option value="2025-1">2025년 1학기</option>

@@ -100,23 +100,23 @@ const Dashboard = ({
         animate={{ opacity: 1, y: 0 }}
         className="bg-gradient-to-r from-kaist-blue to-kaist-lightblue rounded-2xl p-6 text-white"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold mb-2">
+            <h1 className="text-xl sm:text-2xl font-bold mb-2">
               안녕하세요! 👋
             </h1>
-            <p className="text-blue-100">
+            <p className="text-blue-100 text-sm sm:text-base">
               {currentUser?.displayName || currentUser?.email || '사용자'}님의 대시보드입니다
             </p>
-            <p className="text-sm text-blue-200 mt-1">
+            <p className="text-xs sm:text-sm text-blue-200 mt-1">
               {format(currentTime, 'yyyy년 M월 d일 EEEE', { locale: ko })} {formatTime(currentTime)}
             </p>
           </div>
-          <div className="text-right">
-            <div className="text-3xl font-bold">
+          <div className="text-center sm:text-right">
+            <div className="text-2xl sm:text-3xl font-bold">
               {upcomingEvents.length}
             </div>
-            <div className="text-sm text-blue-200">
+            <div className="text-xs sm:text-sm text-blue-200">
               다가오는 일정
             </div>
           </div>
@@ -124,7 +124,7 @@ const Dashboard = ({
       </motion.div>
 
       {/* 메인 컨텐츠 그리드 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6">
         {/* 왼쪽: 축소된 캘린더 */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -132,7 +132,7 @@ const Dashboard = ({
           transition={{ delay: 0.1 }}
           className="lg:col-span-1"
         >
-          <div className="glass-effect rounded-2xl p-4 md:p-6 shadow-xl">
+          <div className="glass-effect rounded-2xl p-3 md:p-6 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg md:text-xl font-bold text-gray-800 dark:text-white flex items-center">
                 <CalendarIcon className="w-4 h-4 md:w-5 md:h-5 mr-2 text-kaist-blue" />
