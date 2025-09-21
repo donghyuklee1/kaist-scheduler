@@ -226,7 +226,7 @@ const CalendarView = ({ events, onEventClick, onAddEvent, currentUser }) => {
       {/* 달력 헤더 */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {format(currentMonth, 'yyyy년 M월', { locale: ko })} 📅 🚀 ✅
+          {format(currentMonth, 'yyyy년 M월', { locale: ko })} 📅
         </h2>
         <div className="flex items-center space-x-2">
           <motion.button
