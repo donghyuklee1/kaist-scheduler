@@ -966,7 +966,7 @@ export const getOptimalMeetingTimes = (meeting) => {
 
       const availabilityRate = totalParticipants > 0 ? (availableCount / totalParticipants) * 100 : 0
 
-      if (availabilityRate >= 50) { // 50% 이상 가능한 시간만 제안
+      if (availabilityRate >= 20) { // 20% 이상 가능한 시간만 제안 (더 관대하게)
         optimalTimes.push({
           day: day,
           dayIndex: dayIndex,
@@ -981,10 +981,10 @@ export const getOptimalMeetingTimes = (meeting) => {
     })
   })
 
-  // 가용률 높은 순으로 정렬하고 상위 10개만 반환
+  // 가용률 높은 순으로 정렬하고 상위 20개만 반환 (더 많은 옵션 제공)
   const result = optimalTimes
     .sort((a, b) => b.availabilityRate - a.availabilityRate)
-    .slice(0, 10)
+    .slice(0, 20)
   
   console.log('Final optimal times result:', result)
   return result
