@@ -641,7 +641,7 @@ export const startAttendanceCheck = async (meetingId, userId) => {
     }
     
     const meetingData = meetingDoc.data()
-    if (meetingData.ownerId !== userId) {
+    if (meetingData.owner !== userId) {
       throw new Error('모임 소유자만 출석 확인을 시작할 수 있습니다')
     }
     
@@ -683,7 +683,7 @@ export const endAttendanceCheck = async (meetingId, userId) => {
     }
     
     const meetingData = meetingDoc.data()
-    if (meetingData.ownerId !== userId) {
+    if (meetingData.owner !== userId) {
       throw new Error('모임 소유자만 출석 확인을 종료할 수 있습니다')
     }
     
@@ -779,4 +779,22 @@ export const getAttendanceStatus = (meeting) => {
     code: meeting.attendanceCheck.code,
     endTime: meeting.attendanceCheck.endTime
   }
+}
+
+// 모임 소유자 확인
+export const isMeetingOwner = (meeting, userId) => {
+  if (!meeting || !userId) return false
+  return meeting.owner === userId
+}
+
+// 모임 참여자 확인
+export const isMeetingParticipant = (meeting, userId) => {
+  if (!meeting || !userId) return false
+  return meeting.participants?.some(p => p.userId === userId && p.status === 'approved')
+}
+
+// 대기 중인 참가 신청 확인
+export const hasPendingRequest = (meeting, userId) => {
+  if (!meeting || !userId) return false
+  return meeting.participants?.some(p => p.userId === userId && p.status === 'pending')
 }
