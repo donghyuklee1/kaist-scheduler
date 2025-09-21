@@ -290,7 +290,7 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
                       }`}>
                         {isParticipant(meeting) ? '참여중' : 
                          meeting.visibility === 'invite' ? '초대 전용' : 
-                         '참가 신청 가능'}
+                         '참가 신청 가능!'}
                       </span>
                     </div>
                   </div>
