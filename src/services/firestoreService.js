@@ -661,8 +661,8 @@ export const generateAttendanceCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString()
 }
 
-// 출석 확인 시작
-export const startAttendanceCheck = async (meetingId, userId) => {
+// 출석 확인 시작 (날짜별 관리)
+export const startAttendanceCheck = async (meetingId, userId, attendanceDate = null) => {
   try {
     if (!db) {
       throw new Error('Firebase가 초기화되지 않았습니다')
@@ -681,29 +681,51 @@ export const startAttendanceCheck = async (meetingId, userId) => {
       throw new Error('모임 소유자만 출석 확인을 시작할 수 있습니다')
     }
     
+    // 출석 날짜 설정 (기본값: 오늘)
+    const targetDate = attendanceDate || new Date().toISOString().split('T')[0]
+    
     const attendanceCode = generateAttendanceCode()
     const endTime = new Date(Date.now() + 3 * 60 * 1000) // 3분 후
     
+    // 날짜별 출석 기록 구조
+    const attendanceRecord = {
+      date: targetDate,
+      code: attendanceCode,
+      startTime: serverTimestamp(),
+      endTime: endTime.toISOString(),
+      attendees: [],
+      isActive: true
+    }
+    
+    // 기존 출석 기록 가져오기
+    const existingAttendanceHistory = meetingData.attendanceHistory || {}
+    
+    // 해당 날짜의 출석 기록 업데이트
+    existingAttendanceHistory[targetDate] = attendanceRecord
+    
     await updateDoc(meetingRef, {
+      attendanceHistory: existingAttendanceHistory,
+      // 현재 활성 출석 확인 (하위 호환성)
       attendanceCheck: {
         isActive: true,
         code: attendanceCode,
         startTime: serverTimestamp(),
         endTime: endTime.toISOString(),
-        attendees: []
+        attendees: [],
+        currentDate: targetDate
       },
       updatedAt: serverTimestamp()
     })
     
-    console.log('출석 확인 시작 성공:', attendanceCode)
-    return attendanceCode
+    console.log('출석 확인 시작 성공, 날짜:', targetDate, '코드:', attendanceCode)
+    return { code: attendanceCode, date: targetDate }
   } catch (error) {
     console.error('출석 확인 시작 실패:', error)
     throw error
   }
 }
 
-// 출석 확인 종료
+// 출석 확인 종료 (날짜별 관리)
 export const endAttendanceCheck = async (meetingId, userId) => {
   try {
     if (!db) {
@@ -723,25 +745,40 @@ export const endAttendanceCheck = async (meetingId, userId) => {
       throw new Error('모임 소유자만 출석 확인을 종료할 수 있습니다')
     }
     
+    const currentDate = meetingData.attendanceCheck?.currentDate || new Date().toISOString().split('T')[0]
+    const attendanceHistory = meetingData.attendanceHistory || {}
+    
+    // 해당 날짜의 출석 기록 업데이트
+    if (attendanceHistory[currentDate]) {
+      attendanceHistory[currentDate] = {
+        ...attendanceHistory[currentDate],
+        isActive: false,
+        endTime: serverTimestamp()
+      }
+    }
+    
     await updateDoc(meetingRef, {
+      attendanceHistory: attendanceHistory,
+      // 현재 활성 출석 확인 비활성화 (하위 호환성)
       attendanceCheck: {
         isActive: false,
         code: null,
         startTime: null,
-        endTime: null,
-        attendees: meetingData.attendanceCheck?.attendees || []
+        endTime: serverTimestamp(),
+        attendees: meetingData.attendanceCheck?.attendees || [],
+        currentDate: null
       },
       updatedAt: serverTimestamp()
     })
     
-    console.log('출석 확인 종료 성공')
+    console.log('출석 확인 종료 성공, 날짜:', currentDate)
   } catch (error) {
     console.error('출석 확인 종료 실패:', error)
     throw error
   }
 }
 
-// 출석 코드 입력
+// 출석 코드 입력 (날짜별 관리)
 export const submitAttendanceCode = async (meetingId, userId, code) => {
   try {
     if (!db) {
@@ -765,8 +802,12 @@ export const submitAttendanceCode = async (meetingId, userId, code) => {
       throw new Error('잘못된 출석 코드입니다')
     }
     
-    // 이미 출석한 사용자인지 확인
-    const existingAttendee = meetingData.attendanceCheck.attendees?.find(
+    const currentDate = meetingData.attendanceCheck?.currentDate || new Date().toISOString().split('T')[0]
+    const attendanceHistory = meetingData.attendanceHistory || {}
+    
+    // 해당 날짜의 출석 기록에서 이미 출석한 사용자인지 확인
+    const currentDateRecord = attendanceHistory[currentDate]
+    const existingAttendee = currentDateRecord?.attendees?.find(
       attendee => attendee.userId === userId
     )
     
@@ -780,12 +821,22 @@ export const submitAttendanceCode = async (meetingId, userId, code) => {
       timestamp: new Date().toISOString()
     }
     
+    // 날짜별 출석 기록 업데이트
+    if (attendanceHistory[currentDate]) {
+      attendanceHistory[currentDate] = {
+        ...attendanceHistory[currentDate],
+        attendees: [...(attendanceHistory[currentDate].attendees || []), newAttendee]
+      }
+    }
+    
     await updateDoc(meetingRef, {
+      attendanceHistory: attendanceHistory,
+      // 현재 활성 출석 확인에도 추가 (하위 호환성)
       'attendanceCheck.attendees': arrayUnion(newAttendee),
       updatedAt: serverTimestamp()
     })
     
-    console.log('출석 확인 성공:', userId)
+    console.log('출석 확인 성공:', userId, '날짜:', currentDate)
     return true
   } catch (error) {
     console.error('출석 확인 실패:', error)
@@ -1257,4 +1308,109 @@ export const removeRecurringEventsForParticipants = async (meetingId) => {
     console.error('반복 모임 일정 제거 실패:', error)
     throw error
   }
+}
+
+// ==================== 날짜별 출석 관리 함수 ====================
+
+// 날짜별 출석 기록 가져오기
+export const getAttendanceHistory = (meeting) => {
+  if (!meeting?.attendanceHistory) {
+    return []
+  }
+
+  const history = Object.entries(meeting.attendanceHistory)
+    .map(([date, record]) => ({
+      date,
+      ...record,
+      // 날짜별 출석률 계산
+      attendanceRate: calculateDateAttendanceRate(record, meeting.participants),
+      // 총 참여자 수 (소유자 제외)
+      totalParticipants: meeting.participants?.filter(p => p.status !== 'owner').length || 0
+    }))
+    .sort((a, b) => new Date(b.date) - new Date(a.date)) // 최신 날짜순
+
+  return history
+}
+
+// 특정 날짜의 출석 기록 가져오기
+export const getAttendanceRecordByDate = (meeting, date) => {
+  if (!meeting?.attendanceHistory || !date) {
+    return null
+  }
+
+  const record = meeting.attendanceHistory[date]
+  if (!record) {
+    return null
+  }
+
+  return {
+    date,
+    ...record,
+    attendanceRate: calculateDateAttendanceRate(record, meeting.participants),
+    totalParticipants: meeting.participants?.filter(p => p.status !== 'owner').length || 0
+  }
+}
+
+// 날짜별 출석률 계산
+const calculateDateAttendanceRate = (record, participants) => {
+  if (!record?.attendees || !participants) {
+    return 0
+  }
+
+  const totalParticipants = participants.filter(p => p.status !== 'owner').length
+  if (totalParticipants === 0) {
+    return 0
+  }
+
+  return Math.round((record.attendees.length / totalParticipants) * 100)
+}
+
+// 날짜별 출석 통계 가져오기
+export const getAttendanceStatistics = (meeting) => {
+  const history = getAttendanceHistory(meeting)
+  
+  if (history.length === 0) {
+    return {
+      totalSessions: 0,
+      averageAttendanceRate: 0,
+      bestAttendanceRate: 0,
+      worstAttendanceRate: 0,
+      totalAttendances: 0
+    }
+  }
+
+  const attendanceRates = history.map(record => record.attendanceRate)
+  const totalAttendances = history.reduce((sum, record) => sum + record.attendees.length, 0)
+
+  return {
+    totalSessions: history.length,
+    averageAttendanceRate: Math.round(attendanceRates.reduce((sum, rate) => sum + rate, 0) / attendanceRates.length),
+    bestAttendanceRate: Math.max(...attendanceRates),
+    worstAttendanceRate: Math.min(...attendanceRates),
+    totalAttendances
+  }
+}
+
+// 특정 사용자의 출석 기록 가져오기
+export const getUserAttendanceHistory = (meeting, userId) => {
+  const history = getAttendanceHistory(meeting)
+  
+  return history.map(record => ({
+    date: record.date,
+    attended: record.attendees?.some(attendee => attendee.userId === userId) || false,
+    attendanceTime: record.attendees?.find(attendee => attendee.userId === userId)?.timestamp || null
+  }))
+}
+
+// 사용자별 출석률 계산
+export const getUserAttendanceRate = (meeting, userId) => {
+  const userHistory = getUserAttendanceHistory(meeting, userId)
+  const totalSessions = userHistory.length
+  
+  if (totalSessions === 0) {
+    return 0
+  }
+  
+  const attendedSessions = userHistory.filter(record => record.attended).length
+  return Math.round((attendedSessions / totalSessions) * 100)
 }

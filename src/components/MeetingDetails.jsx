@@ -23,7 +23,12 @@ import {
   setRecurringMeetingSchedule,
   removeRecurringMeetingSchedule,
   createRecurringEventsForParticipants,
-  removeRecurringEventsForParticipants
+  removeRecurringEventsForParticipants,
+  getAttendanceHistory,
+  getAttendanceRecordByDate,
+  getAttendanceStatistics,
+  getUserAttendanceHistory,
+  getUserAttendanceRate
 } from '../services/firestoreService'
 import TimeCoordination from './TimeCoordination'
 
@@ -43,6 +48,14 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
     endDate: '',
     location: ''
   })
+
+  // 출석 관리 상태
+  const [attendanceCode, setAttendanceCode] = useState('')
+  const [timeLeft, setTimeLeft] = useState(0)
+  const [attendanceStatus, setAttendanceStatus] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [selectedAttendanceDate, setSelectedAttendanceDate] = useState(new Date().toISOString().split('T')[0])
+  const [showAttendanceHistory, setShowAttendanceHistory] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
@@ -182,10 +195,10 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
   const handleStartAttendance = async () => {
     try {
       setIsLoading(true)
-      const code = await startAttendanceCheck(meeting.id, currentUser.uid)
-      setAttendanceCode(code)
+      const result = await startAttendanceCheck(meeting.id, currentUser.uid, selectedAttendanceDate)
+      setAttendanceCode(result.code)
       setTimeLeft(180) // 3분 = 180초
-      alert(`출석 확인이 시작되었습니다!\n출석 코드: ${code}`)
+      alert(`출석 확인이 시작되었습니다!\n날짜: ${result.date}\n출석 코드: ${result.code}`)
     } catch (error) {
       alert('출석 확인 시작에 실패했습니다: ' + error.message)
     } finally {
@@ -993,55 +1006,155 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
 
                   {/* 출석 현황 */}
                   <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                    <div className="text-center mb-6">
-                      <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
-                        {attendanceStatus?.attendanceRate || 0}%
+                    {/* 날짜 선택 및 출석 기록 보기 */}
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                      <div className="flex flex-col md:flex-row md:items-center gap-3">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          출석 날짜:
+                        </label>
+                        <input
+                          type="date"
+                          value={selectedAttendanceDate}
+                          onChange={(e) => setSelectedAttendanceDate(e.target.value)}
+                          className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
-                        출석률 ({attendanceStatus?.attendees?.length || 0}/{attendanceStatus?.totalParticipants || 0}명)
-                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setShowAttendanceHistory(!showAttendanceHistory)}
+                        className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
+                      >
+                        {showAttendanceHistory ? '현재 출석 숨기기' : '출석 기록 보기'}
+                      </motion.button>
                     </div>
 
-                    {attendanceStatus?.isActive && (
-                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-4">
-                        <div className="text-center">
-                          <div className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">
-                            출석 확인 진행 중
-                          </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                            출석 코드: <span className="font-mono font-bold">{attendanceStatus.code}</span>
-                          </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">
-                            남은 시간: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-                          </div>
+                    {/* 출석 기록 보기 */}
+                    {showAttendanceHistory ? (
+                      <div className="space-y-4">
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                          출석 기록 ({getAttendanceHistory(meeting).length}회)
+                        </h4>
+                        
+                        {/* 출석 통계 */}
+                        {(() => {
+                          const stats = getAttendanceStatistics(meeting)
+                          return stats.totalSessions > 0 && (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-center">
+                                <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{stats.totalSessions}</div>
+                                <div className="text-xs text-blue-600 dark:text-blue-400">총 세션</div>
+                              </div>
+                              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 text-center">
+                                <div className="text-lg font-bold text-green-600 dark:text-green-400">{stats.averageAttendanceRate}%</div>
+                                <div className="text-xs text-green-600 dark:text-green-400">평균 출석률</div>
+                              </div>
+                              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 text-center">
+                                <div className="text-lg font-bold text-purple-600 dark:text-purple-400">{stats.bestAttendanceRate}%</div>
+                                <div className="text-xs text-purple-600 dark:text-purple-400">최고 출석률</div>
+                              </div>
+                              <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3 text-center">
+                                <div className="text-lg font-bold text-orange-600 dark:text-orange-400">{stats.totalAttendances}</div>
+                                <div className="text-xs text-orange-600 dark:text-orange-400">총 출석 수</div>
+                              </div>
+                            </div>
+                          )
+                        })()}
+
+                        {/* 날짜별 출석 기록 목록 */}
+                        <div className="space-y-3">
+                          {getAttendanceHistory(meeting).map((record) => (
+                            <motion.div
+                              key={record.date}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className={`p-4 rounded-lg border ${
+                                record.date === selectedAttendanceDate
+                                  ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700'
+                                  : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                  <div className="text-sm font-medium text-gray-800 dark:text-white">
+                                    {format(new Date(record.date), 'yyyy년 M월 d일', { locale: ko })}
+                                  </div>
+                                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                                    {record.attendees?.length || 0}/{record.totalParticipants}명
+                                  </div>
+                                  <div className={`text-sm font-semibold ${
+                                    record.attendanceRate >= 80 ? 'text-green-600 dark:text-green-400' :
+                                    record.attendanceRate >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
+                                    'text-red-600 dark:text-red-400'
+                                  }`}>
+                                    {record.attendanceRate}%
+                                  </div>
+                                </div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                  {record.isActive ? '진행 중' : '완료'}
+                                </div>
+                              </div>
+                            </motion.div>
+                          ))}
                         </div>
                       </div>
-                    )}
+                    ) : (
+                      <>
+                        {/* 현재 출석 현황 */}
+                        <div className="text-center mb-6">
+                          <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+                            {attendanceStatus?.attendanceRate || 0}%
+                          </div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                            출석률 ({attendanceStatus?.attendees?.length || 0}/{attendanceStatus?.totalParticipants || 0}명)
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {format(new Date(selectedAttendanceDate), 'yyyy년 M월 d일', { locale: ko })}
+                          </div>
+                        </div>
 
-                    {/* 출석 확인 시작/종료 버튼 */}
-                    <div className="text-center">
-                      {attendanceStatus?.isActive ? (
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={handleEndAttendance}
-                          disabled={isLoading}
-                          className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
-                        >
-                          {isLoading ? '종료 중...' : '출석 확인 종료'}
-                        </motion.button>
-                      ) : (
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={handleStartAttendance}
-                          disabled={isLoading}
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
-                        >
-                          {isLoading ? '시작 중...' : '출석 확인 시작'}
-                        </motion.button>
-                      )}
-                    </div>
+                        {attendanceStatus?.isActive && (
+                          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-4">
+                            <div className="text-center">
+                              <div className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">
+                                출석 확인 진행 중
+                              </div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                출석 코드: <span className="font-mono font-bold">{attendanceStatus.code}</span>
+                              </div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
+                                남은 시간: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 출석 확인 시작/종료 버튼 */}
+                        <div className="text-center">
+                          {attendanceStatus?.isActive ? (
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={handleEndAttendance}
+                              disabled={isLoading}
+                              className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+                            >
+                              {isLoading ? '종료 중...' : '출석 확인 종료'}
+                            </motion.button>
+                          ) : (
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={handleStartAttendance}
+                              disabled={isLoading}
+                              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+                            >
+                              {isLoading ? '시작 중...' : '출석 확인 시작'}
+                            </motion.button>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* 출석자 목록 */}
@@ -1083,42 +1196,71 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
 
                   {/* 모임원별 출석률 목록 */}
                   <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                    <h4 className="font-semibold text-gray-800 dark:text-white mb-4">모임원별 출석률</h4>
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-semibold text-gray-800 dark:text-white">모임원별 출석률</h4>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        총 {getAttendanceHistory(meeting).length}회 출석 확인
+                      </div>
+                    </div>
                     <div className="space-y-3">
                       {(() => {
                         const memberRates = getMemberAttendanceRates(meeting)
                         return memberRates.length > 0 ? (
-                          memberRates.map((member, index) => (
-                            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                              <div className="flex items-center space-x-3">
-                                <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                                  <span className="text-white text-sm font-bold">
-                                    {member.displayName.charAt(0).toUpperCase()}
-                                  </span>
+                          memberRates.map((member, index) => {
+                            const userHistory = getUserAttendanceHistory(meeting, member.userId)
+                            const userRate = getUserAttendanceRate(meeting, member.userId)
+                            
+                            return (
+                              <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                              >
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                                    <span className="text-white text-sm font-bold">
+                                      {member.displayName.charAt(0).toUpperCase()}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <div className="font-medium text-gray-800 dark:text-white">
+                                      {member.displayName}
+                                    </div>
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                      {member.attendanceCount}회 출석 / {userHistory.length}회 세션
+                                    </div>
+                                    <div className="text-xs text-gray-400 dark:text-gray-500">
+                                      최근 출석: {(() => {
+                                        const lastAttendance = userHistory
+                                          .filter(record => record.attended)
+                                          .sort((a, b) => new Date(b.date) - new Date(a.date))[0]
+                                        return lastAttendance ? format(new Date(lastAttendance.date), 'M월 d일', { locale: ko }) : '없음'
+                                      })()}
+                                    </div>
+                                  </div>
                                 </div>
-                                <div>
-                                  <div className="font-medium text-gray-800 dark:text-white">
-                                    {member.displayName}
+                                <div className="text-right">
+                                  <div className={`text-lg font-semibold ${
+                                    userRate >= 80 ? 'text-green-600 dark:text-green-400' :
+                                    userRate >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
+                                    'text-red-600 dark:text-red-400'
+                                  }`}>
+                                    {userRate}%
                                   </div>
                                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    {member.attendanceCount}회 출석
+                                    출석률
                                   </div>
                                 </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-lg font-semibold text-gray-800 dark:text-white">
-                                  {member.attendanceRate}%
-                                </div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400">
-                                  출석률
-                                </div>
-                              </div>
-                            </div>
-                          ))
+                              </motion.div>
+                            )
+                          })
                         ) : (
                           <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                             <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-50" />
                             <p>출석 데이터가 없습니다</p>
+                            <p className="text-sm mt-2">출석 확인을 시작하면 여기에 표시됩니다</p>
                           </div>
                         )
                       })()}
