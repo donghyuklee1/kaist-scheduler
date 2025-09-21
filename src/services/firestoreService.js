@@ -477,20 +477,6 @@ export const deleteMeetingInFirestore = async (meetingId) => {
   }
 }
 
-// 사용자가 모임장인지 확인
-export const isMeetingOwner = (meeting, userId) => {
-  return meeting.participants.some(p => p.userId === userId && p.status === 'owner')
-}
-
-// 사용자가 모임 참가자인지 확인
-export const isMeetingParticipant = (meeting, userId) => {
-  return meeting.participants.some(p => p.userId === userId && (p.status === 'owner' || p.status === 'approved'))
-}
-
-// 사용자가 참가 신청을 보낸 상태인지 확인
-export const hasPendingRequest = (meeting, userId) => {
-  return meeting.participants.some(p => p.userId === userId && p.status === 'pending')
-}
 
 // 참가 신청 보내기
 export const sendJoinRequest = async (meetingId, userId, userInfo) => {
