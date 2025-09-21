@@ -17,6 +17,20 @@ import {
 import TimeCoordination from './TimeCoordination'
 
 const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
+  // 모바일 감지
+  const [isMobile, setIsMobile] = useState(false)
+  const [showMobileTimeCoordination, setShowMobileTimeCoordination] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   // 사용자 상태 확인
   const isOwner = isMeetingOwner(meeting, currentUser?.uid)
   const isParticipant = isMeetingParticipant(meeting, currentUser?.uid)
@@ -583,7 +597,13 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => setActiveTab('timeCoordination')}
+                      onClick={() => {
+                        if (isMobile) {
+                          setShowMobileTimeCoordination(true)
+                        } else {
+                          setActiveTab('timeCoordination')
+                        }
+                      }}
                       className="flex items-center space-x-2 px-4 py-2 bg-kaist-blue text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                     >
                       <Clock className="w-4 h-4" />
@@ -1158,6 +1178,48 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                   추가
                 </motion.button>
               </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* 모바일 시간 조율 모달 */}
+      {showMobileTimeCoordination && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm md:hidden"
+        >
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-800 rounded-t-3xl shadow-2xl max-h-[90vh] overflow-hidden"
+          >
+            {/* 모달 헤더 */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => setShowMobileTimeCoordination(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              </button>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                시간 조율
+              </h2>
+              <div className="w-9"></div> {/* 중앙 정렬을 위한 공간 */}
+            </div>
+
+            {/* 모달 내용 */}
+            <div className="flex-1 overflow-hidden">
+              <TimeCoordination
+                meeting={meeting}
+                currentUser={currentUser}
+                onBack={() => setShowMobileTimeCoordination(false)}
+                isMobileModal={true}
+              />
             </div>
           </motion.div>
         </motion.div>

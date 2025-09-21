@@ -4,7 +4,7 @@ import { ArrowLeft, Calendar, Clock, Users, MapPin, CheckCircle, XCircle } from 
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 
-const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, onComplete }) => {
+const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, onComplete, isMobileModal = false }) => {
   const [availableMode, setAvailableMode] = useState(true) // true: 가능한 시간, false: 불가능한 시간
   const [availableSlots, setAvailableSlots] = useState([]) // 가능한 시간 슬롯
   const [unavailableSlots, setUnavailableSlots] = useState([]) // 불가능한 시간 슬롯
@@ -187,9 +187,10 @@ const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, 
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <div className="sticky top-0 z-40 glass-effect border-b border-white/20 p-3 md:p-4">
+    <div className={isMobileModal ? "h-full bg-white dark:bg-gray-800" : "min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800"}>
+      {/* Header - 모바일 모달에서는 숨김 */}
+      {!isMobileModal && (
+        <div className="sticky top-0 z-40 glass-effect border-b border-white/20 p-3 md:p-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
           <div className="flex items-center space-x-3 md:space-x-4">
             <motion.button
@@ -231,14 +232,15 @@ const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, 
           </div>
         </div>
       </div>
+      )}
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className={isMobileModal ? "h-full overflow-hidden" : "container mx-auto px-4 py-8"}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="glass-effect rounded-2xl p-4 md:p-6 shadow-xl"
+          className={isMobileModal ? "h-full p-4 overflow-hidden" : "glass-effect rounded-2xl p-4 md:p-6 shadow-xl"}
         >
           {/* Mode Toggle */}
           <div className="mb-8">
@@ -349,6 +351,21 @@ const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, 
           </div>
         </motion.div>
       </div>
+
+      {/* 모바일 모달용 완료 버튼 */}
+      {isMobileModal && (
+        <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onComplete}
+            className="w-full bg-kaist-blue text-white rounded-xl py-3 px-4 font-medium flex items-center justify-center space-x-2"
+          >
+            <CheckCircle className="w-5 h-5" />
+            <span>완료</span>
+          </motion.button>
+        </div>
+      )}
     </div>
   )
 }
