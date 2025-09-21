@@ -438,6 +438,12 @@ export const addAnnouncement = async (meetingId, announcementData, userId) => {
     }
     
     const meetingData = meetingDoc.data()
+    
+    // 소유자 권한 확인
+    if (meetingData.owner !== userId) {
+      throw new Error('모임 소유자만 공지사항을 추가할 수 있습니다')
+    }
+    
     const newAnnouncement = {
       id: Date.now().toString(),
       ...announcementData,
