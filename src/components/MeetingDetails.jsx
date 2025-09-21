@@ -28,7 +28,9 @@ import {
   getAttendanceRecordByDate,
   getAttendanceStatistics,
   getUserAttendanceHistory,
-  getUserAttendanceRate
+  getUserAttendanceRate,
+  createMeetingScheduleFromSuggestion,
+  removeSuggestedSchedule
 } from '../services/firestoreService'
 import TimeCoordination from './TimeCoordination'
 
@@ -277,6 +279,48 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
       setTimeLeft(remaining)
     }
   }, [attendanceStatus])
+
+  // 제안된 시간으로 자동 일정 생성
+  const handleCreateScheduleFromSuggestion = async (suggestion) => {
+    try {
+      setIsLoading(true)
+      
+      const scheduleData = await createMeetingScheduleFromSuggestion(
+        meeting.id, 
+        suggestion, 
+        currentUser.uid
+      )
+      
+      alert(`모임 일정이 생성되었습니다!\n날짜: ${scheduleData.date}\n시간: ${scheduleData.startTime} - ${scheduleData.endTime}\n모든 참여자의 개인 일정에 자동으로 추가되었습니다.`)
+      
+    } catch (error) {
+      console.error('일정 생성 실패:', error)
+      alert('일정 생성에 실패했습니다: ' + error.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // 제안된 일정 제거
+  const handleRemoveSuggestedSchedule = async () => {
+    if (!window.confirm('제안된 일정을 제거하시겠습니까? 모든 참여자의 개인 일정에서도 제거됩니다.')) {
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      
+      await removeSuggestedSchedule(meeting.id, currentUser.uid)
+      
+      alert('제안된 일정이 제거되었습니다!')
+      
+    } catch (error) {
+      console.error('일정 제거 실패:', error)
+      alert('일정 제거에 실패했습니다: ' + error.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   // 실시간 출석 상태 업데이트를 위한 타이머
   useEffect(() => {
@@ -876,41 +920,115 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
               {/* 최적의 모임 시간 제안 */}
               {(() => {
                 const optimalTimes = getOptimalMeetingTimes(meeting)
-                console.log('Meeting data:', meeting)
-                console.log('Availability data:', meeting?.availability)
-                console.log('Optimal times:', optimalTimes)
-                return optimalTimes.length > 0 && (
+                const hasSuggestedSchedule = meeting?.suggestedSchedule
+                
+                return (
                   <div className="mb-6">
-                    <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">
-                      💡 최적의 모임 시간 제안
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {optimalTimes.slice(0, 6).map((timeSlot, index) => (
-                        <motion.div
-                          key={index}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                          className="p-3 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg border border-green-200 dark:border-green-700"
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-lg font-semibold text-gray-800 dark:text-white">
+                        💡 최적의 모임 시간 제안
+                      </h4>
+                      {hasSuggestedSchedule && (
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleRemoveSuggestedSchedule}
+                          disabled={isLoading}
+                          className="px-3 py-1 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50 text-sm"
                         >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="font-medium text-gray-800 dark:text-white">
-                                {timeSlot.day} {timeSlot.time}
-                              </div>
-                              <div className="text-sm text-gray-600 dark:text-gray-400">
-                                {timeSlot.availableCount}/{timeSlot.totalParticipants}명 가능
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-lg font-bold text-green-600 dark:text-green-400">
-                                {timeSlot.availabilityRate}%
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
+                          {isLoading ? '제거 중...' : '제안 일정 제거'}
+                        </motion.button>
+                      )}
                     </div>
+                    
+                    {hasSuggestedSchedule ? (
+                      // 이미 제안된 일정이 있는 경우
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                        <div className="flex items-center space-x-3 mb-3">
+                          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-800 rounded-lg flex items-center justify-center">
+                            <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <div>
+                            <h5 className="font-semibold text-blue-800 dark:text-blue-200">제안된 모임 일정</h5>
+                            <p className="text-sm text-blue-600 dark:text-blue-400">모든 참여자의 개인 일정에 추가되었습니다</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            <span className="text-sm text-blue-700 dark:text-blue-300">
+                              {format(new Date(meeting.suggestedSchedule.date), 'yyyy년 M월 d일', { locale: ko })}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            <span className="text-sm text-blue-700 dark:text-blue-300">
+                              {meeting.suggestedSchedule.startTime} - {meeting.suggestedSchedule.endTime}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            <span className="text-sm text-blue-700 dark:text-blue-300">
+                              {meeting.suggestedSchedule.location || '장소 미정'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : optimalTimes.length > 0 ? (
+                      // 제안할 수 있는 시간이 있는 경우
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {optimalTimes.slice(0, 6).map((timeSlot, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            className="p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg border border-green-200 dark:border-green-700 hover:shadow-md transition-shadow"
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <div>
+                                <div className="font-medium text-gray-800 dark:text-white">
+                                  {timeSlot.day} {timeSlot.time}
+                                </div>
+                                <div className="text-sm text-gray-600 dark:text-gray-400">
+                                  {timeSlot.availableCount}/{timeSlot.totalParticipants}명 가능
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className={`text-lg font-bold ${
+                                  timeSlot.availabilityRate >= 80 ? 'text-green-600 dark:text-green-400' :
+                                  timeSlot.availabilityRate >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
+                                  'text-red-600 dark:text-red-400'
+                                }`}>
+                                  {timeSlot.availabilityRate}%
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {isOwner && (
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleCreateScheduleFromSuggestion(timeSlot)}
+                                disabled={isLoading}
+                                className="w-full px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                              >
+                                {isLoading ? '생성 중...' : '이 시간으로 일정 생성'}
+                              </motion.button>
+                            )}
+                          </motion.div>
+                        ))}
+                      </div>
+                    ) : (
+                      // 제안할 수 있는 시간이 없는 경우
+                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 text-center">
+                        <Clock className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                        <p className="text-gray-500 dark:text-gray-400 mb-2">제안할 수 있는 시간이 없습니다</p>
+                        <p className="text-sm text-gray-400 dark:text-gray-500">
+                          참여자들이 시간표를 조율하면 최적의 시간을 제안할 수 있습니다
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )
               })()}

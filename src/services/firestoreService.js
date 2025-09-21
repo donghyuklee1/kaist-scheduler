@@ -1414,3 +1414,171 @@ export const getUserAttendanceRate = (meeting, userId) => {
   const attendedSessions = userHistory.filter(record => record.attended).length
   return Math.round((attendedSessions / totalSessions) * 100)
 }
+
+// ==================== 최적 모임 시간 제안 및 자동 일정 생성 ====================
+
+// 제안된 시간으로 모임 일정 자동 생성
+export const createMeetingScheduleFromSuggestion = async (meetingId, suggestion, userId) => {
+  try {
+    if (!db) {
+      throw new Error('Firebase가 초기화되지 않았습니다')
+    }
+
+    const meetingRef = doc(db, COLLECTIONS.MEETINGS, meetingId)
+    
+    // 현재 모임 데이터를 가져와서 소유자인지 확인
+    const meetingDoc = await getDoc(meetingRef)
+    if (!meetingDoc.exists()) {
+      throw new Error('모임을 찾을 수 없습니다')
+    }
+    
+    const meetingData = meetingDoc.data()
+    if (meetingData.owner !== userId) {
+      throw new Error('모임 소유자만 일정을 생성할 수 있습니다')
+    }
+
+    // 제안된 날짜 계산 (다음 주 해당 요일)
+    const suggestedDate = calculateSuggestedDate(suggestion.dayIndex, suggestion.time)
+    
+    // 모임 일정 데이터 생성
+    const scheduleData = {
+      date: suggestedDate,
+      startTime: suggestion.time,
+      endTime: calculateEndTime(suggestion.time, 2), // 기본 2시간
+      location: meetingData.location || '',
+      title: `${meetingData.title} 모임`,
+      description: `최적 시간 제안으로 생성된 모임 일정`,
+      isSuggested: true,
+      suggestionData: suggestion
+    }
+
+    // 모임에 일정 정보 추가
+    await updateDoc(meetingRef, {
+      suggestedSchedule: scheduleData,
+      updatedAt: serverTimestamp()
+    })
+
+    // 모든 참여자의 개인 일정에 추가
+    const participants = meetingData.participants?.filter(p => p.status === 'approved' || p.status === 'owner') || []
+    
+    if (participants.length > 0) {
+      const batch = writeBatch(db)
+      
+      participants.forEach(participant => {
+        const eventData = {
+          userId: participant.userId,
+          title: `${meetingData.title} 모임`,
+          description: `최적 시간 제안으로 생성된 모임 일정 - ${meetingData.title}`,
+          date: suggestedDate,
+          time: suggestion.time,
+          endTime: calculateEndTime(suggestion.time, 2),
+          location: meetingData.location || '',
+          category: 'meeting',
+          meetingId: meetingId,
+          isSuggested: true,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }
+        
+        const eventRef = doc(collection(db, 'events'))
+        batch.set(eventRef, eventData)
+      })
+      
+      await batch.commit()
+    }
+
+    console.log('제안된 시간으로 모임 일정 생성 완료:', scheduleData)
+    return scheduleData
+  } catch (error) {
+    console.error('모임 일정 생성 실패:', error)
+    throw error
+  }
+}
+
+// 제안된 날짜 계산 (다음 주 해당 요일)
+const calculateSuggestedDate = (dayIndex, time) => {
+  const today = new Date()
+  const currentDay = today.getDay()
+  const currentHour = parseInt(time.split(':')[0])
+  const currentMinute = parseInt(time.split(':')[1])
+  
+  // 현재 시간이 제안 시간보다 늦으면 다음 주, 아니면 이번 주
+  const isPastTime = today.getHours() > currentHour || 
+    (today.getHours() === currentHour && today.getMinutes() > currentMinute)
+  
+  const daysUntilTarget = (dayIndex - currentDay + 7) % 7
+  const targetDate = new Date(today)
+  
+  if (isPastTime && daysUntilTarget === 0) {
+    // 오늘이지만 시간이 지났으면 다음 주
+    targetDate.setDate(today.getDate() + 7)
+  } else if (daysUntilTarget === 0 && !isPastTime) {
+    // 오늘이고 시간이 안 지났으면 오늘
+    targetDate.setDate(today.getDate())
+  } else {
+    // 다른 요일이면 해당 요일로
+    targetDate.setDate(today.getDate() + daysUntilTarget)
+  }
+  
+  return targetDate.toISOString().split('T')[0]
+}
+
+// 종료 시간 계산
+const calculateEndTime = (startTime, durationHours) => {
+  const [hours, minutes] = startTime.split(':').map(Number)
+  const endMinutes = hours * 60 + minutes + durationHours * 60
+  
+  const endHours = Math.floor(endMinutes / 60)
+  const endMins = endMinutes % 60
+  
+  return `${endHours.toString().padStart(2, '0')}:${endMins.toString().padStart(2, '0')}`
+}
+
+// 제안된 일정 제거
+export const removeSuggestedSchedule = async (meetingId, userId) => {
+  try {
+    if (!db) {
+      throw new Error('Firebase가 초기화되지 않았습니다')
+    }
+
+    const meetingRef = doc(db, COLLECTIONS.MEETINGS, meetingId)
+    
+    // 현재 모임 데이터를 가져와서 소유자인지 확인
+    const meetingDoc = await getDoc(meetingRef)
+    if (!meetingDoc.exists()) {
+      throw new Error('모임을 찾을 수 없습니다')
+    }
+    
+    const meetingData = meetingDoc.data()
+    if (meetingData.owner !== userId) {
+      throw new Error('모임 소유자만 일정을 제거할 수 있습니다')
+    }
+
+    // 제안된 일정 관련 이벤트들 삭제
+    const eventsQuery = query(
+      collection(db, 'events'),
+      where('meetingId', '==', meetingId),
+      where('isSuggested', '==', true)
+    )
+    
+    const eventsSnapshot = await getDocs(eventsQuery)
+    const batch = writeBatch(db)
+    
+    eventsSnapshot.forEach(doc => {
+      batch.delete(doc.ref)
+    })
+    
+    await batch.commit()
+
+    // 모임에서 제안된 일정 정보 제거
+    await updateDoc(meetingRef, {
+      suggestedSchedule: null,
+      updatedAt: serverTimestamp()
+    })
+
+    console.log('제안된 일정 제거 완료')
+  } catch (error) {
+    console.error('제안된 일정 제거 실패:', error)
+    throw error
+  }
+}
