@@ -52,14 +52,31 @@ export const subscribeToUserEvents = (userId, callback) => {
 
     return onSnapshot(q, (snapshot) => {
       console.log('사용자 이벤트 데이터 변경 감지:', snapshot.docs.length, '개 이벤트')
+      
+      // 변경사항이 있는 경우에만 처리
+      if (snapshot.docChanges().length > 0) {
+        console.log('이벤트 변경사항:', snapshot.docChanges().map(change => ({
+          type: change.type,
+          docId: change.doc.id,
+          title: change.doc.data().title
+        })))
+      }
+      
       const events = snapshot.docs.map(doc => {
         const data = doc.data()
-        console.log('이벤트 데이터:', { id: doc.id, title: data.title, date: data.date })
         return {
           id: doc.id,
-          ...data
+          ...data,
+          // 날짜 객체 정규화
+          date: data.date?.toDate ? data.date.toDate() : new Date(data.date),
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
+          updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt)
         }
       })
+      
+      // 날짜순 정렬 (클라이언트 사이드에서도 정렬)
+      events.sort((a, b) => new Date(a.date) - new Date(b.date))
+      
       callback(events)
     }, (error) => {
       console.error('사용자 이벤트 구독 오류:', error)
@@ -208,21 +225,34 @@ export const subscribeToMeetings = (callback) => {
 
     return onSnapshot(q, (snapshot) => {
       console.log('모임 데이터 변경 감지:', snapshot.docs.length, '개 모임')
+      
+      // 변경사항이 있는 경우에만 처리
+      if (snapshot.docChanges().length > 0) {
+        console.log('모임 변경사항:', snapshot.docChanges().map(change => ({
+          type: change.type,
+          docId: change.doc.id,
+          title: change.doc.data().title
+        })))
+      }
+      
       const meetings = snapshot.docs.map(doc => {
         const data = doc.data()
-        console.log('모임 데이터:', { id: doc.id, title: data.title, createdAt: data.createdAt })
         return {
           id: doc.id,
-          ...data
+          ...data,
+          // 날짜 객체 정규화
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || 0),
+          updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt || 0),
+          // 참여자 데이터 정규화
+          participants: data.participants?.map(p => ({
+            ...p,
+            joinedAt: p.joinedAt ? new Date(p.joinedAt) : new Date()
+          })) || []
         }
       })
       
-      // 클라이언트에서 생성일 기준으로 정렬
-      meetings.sort((a, b) => {
-        const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0)
-        const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0)
-        return bTime - aTime // 최신순
-      })
+      // 클라이언트에서 생성일 기준으로 정렬 (최신순)
+      meetings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       
       callback(meetings)
     }, (error) => {

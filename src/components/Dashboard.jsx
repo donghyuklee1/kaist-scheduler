@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo, memo } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, Clock, Users, Bell, TrendingUp, MapPin, ChevronRight, AlertCircle, CheckCircle, Calendar as CalendarIcon, X } from 'lucide-react'
 import { format, isToday, isTomorrow, isYesterday, addDays, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns'
@@ -616,4 +616,4 @@ const Dashboard = ({
   )
 }
 
-export default Dashboard
+export default memo(Dashboard)

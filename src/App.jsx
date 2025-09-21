@@ -3,6 +3,9 @@ import { motion } from 'framer-motion'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import LandingPage from './components/LandingPage'
+import { ToastProvider } from './contexts/ToastContext'
+import { useRealtimeUpdates } from './hooks/useRealtimeUpdates'
+import ErrorBoundary from './components/ErrorBoundary'
 
 // 동적 import를 사용한 지연 로딩
 const Calendar = lazy(() => import('./components/Calendar'))
@@ -87,6 +90,11 @@ function App() {
   const [showMeetingDetails, setShowMeetingDetails] = useState(false)
   const [showFirebaseSetupAlert, setShowFirebaseSetupAlert] = useState(false)
   const [notifications, setNotifications] = useState([])
+
+  // 실시간 업데이트 감지
+  useRealtimeUpdates(events, 'events')
+  useRealtimeUpdates(meetings, 'meetings')
+  useRealtimeUpdates(notifications, 'notifications')
 
   // 사용자 로그인 상태에 따른 로그인 페이지 관리
   useEffect(() => {
@@ -546,7 +554,9 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800 flex flex-col">
+    <ErrorBoundary>
+      <ToastProvider>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800 flex flex-col">
           <Header
             view={view}
             setView={setView}
@@ -663,7 +673,9 @@ function App() {
         isVisible={showFirebaseSetupAlert}
         onClose={() => setShowFirebaseSetupAlert(false)}
       />
-    </div>
+        </div>
+      </ToastProvider>
+    </ErrorBoundary>
   )
 }
 

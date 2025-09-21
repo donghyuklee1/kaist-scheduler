@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo, memo } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, Calendar, Clock, MapPin, Users, Tag, Search, Filter, User, ChevronDown } from 'lucide-react'
 import { format, isToday, isTomorrow, isYesterday } from 'date-fns'
@@ -360,4 +360,4 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
   )
 }
 
-export default MeetingList
+export default memo(MeetingList)
