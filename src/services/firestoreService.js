@@ -132,6 +132,16 @@ export const createEvent = async (eventData, userId) => {
     
     const docRef = await addDoc(collection(db, COLLECTIONS.EVENTS), eventDoc)
     console.log('이벤트 생성 성공, ID:', docRef.id)
+    console.log('생성된 이벤트 문서:', eventDoc)
+    
+    // 생성 후 즉시 문서를 다시 읽어서 확인
+    const createdDoc = await getDoc(docRef)
+    if (createdDoc.exists()) {
+      console.log('생성된 문서 확인 성공:', createdDoc.data())
+    } else {
+      console.error('생성된 문서를 찾을 수 없습니다!')
+    }
+    
     return docRef.id
   } catch (error) {
     console.error('이벤트 생성 실패:', error)

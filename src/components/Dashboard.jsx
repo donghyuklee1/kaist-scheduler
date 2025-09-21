@@ -33,17 +33,25 @@ const Dashboard = ({
     setShowDateEvents(true)
   }
 
-  // 특정 날짜의 일정 필터링
+  // 특정 날짜의 일정 필터링 (본인 일정만)
   const getEventsForDate = (date) => {
     return events.filter(event => {
+      // 본인의 일정만 표시
+      if (event.userId !== currentUser?.uid) {
+        return false
+      }
       const eventDate = new Date(event.date)
       return eventDate.toDateString() === date.toDateString()
     })
   }
 
-  // 다가오는 일정 (오늘부터 7일간)
+  // 다가오는 일정 (오늘부터 7일간, 본인 일정만)
   const upcomingEvents = events
     .filter(event => {
+      // 본인의 일정만 표시
+      if (event.userId !== currentUser?.uid) {
+        return false
+      }
       const eventDate = new Date(event.date)
       const today = new Date()
       const weekFromNow = addDays(today, 7)

@@ -5,7 +5,7 @@ import { format, isSameDay, isToday, isTomorrow, isYesterday } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { allBuildings, getBuildingById } from '../data/buildings'
 
-const ScheduleGrid = ({ events, onEventClick, onAddEvent }) => {
+const ScheduleGrid = ({ events, onEventClick, onAddEvent, currentUser }) => {
   const [filter, setFilter] = useState('all') // 'all', 'today', 'week', 'month'
   const [sortBy, setSortBy] = useState('date') // 'date', 'priority', 'category'
   const [buildingFilter, setBuildingFilter] = useState('all') // 'all' or building ID
@@ -27,6 +27,12 @@ const ScheduleGrid = ({ events, onEventClick, onAddEvent }) => {
 
   const getFilteredEvents = () => {
     let filtered = [...events]
+
+    // 본인의 일정만 표시
+    filtered = filtered.filter(event => {
+      if (!currentUser?.uid) return false
+      return event.userId === currentUser.uid
+    })
 
     // Apply date filter
     switch (filter) {
