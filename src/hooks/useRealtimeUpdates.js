@@ -1,12 +1,18 @@
 import { useEffect, useRef } from 'react'
-import { useToast } from '../contexts/ToastContext'
+import { useContext } from 'react'
+import { ToastContext } from '../contexts/ToastContext'
 
 export const useRealtimeUpdates = (data, dataType) => {
-  const toast = useToast()
+  const toastContext = useContext(ToastContext)
   const previousDataRef = useRef(null)
   const isInitialLoadRef = useRef(true)
 
   useEffect(() => {
+    // ToastProvider가 없으면 토스트 기능을 비활성화
+    if (!toastContext) {
+      return
+    }
+
     // 초기 로드 시에는 알림을 표시하지 않음
     if (isInitialLoadRef.current) {
       isInitialLoadRef.current = false
@@ -39,11 +45,11 @@ export const useRealtimeUpdates = (data, dataType) => {
       )
 
       if (newEvents.length > 0) {
-        toast.showInfo(`${newEvents.length}개의 새 일정이 추가되었습니다`, '일정 업데이트')
+        toastContext.showInfo(`${newEvents.length}개의 새 일정이 추가되었습니다`, '일정 업데이트')
       }
       
       if (deletedEvents.length > 0) {
-        toast.showInfo(`${deletedEvents.length}개의 일정이 삭제되었습니다`, '일정 업데이트')
+        toastContext.showInfo(`${deletedEvents.length}개의 일정이 삭제되었습니다`, '일정 업데이트')
       }
     }
 
@@ -69,17 +75,17 @@ export const useRealtimeUpdates = (data, dataType) => {
       })
 
       if (newMeetings.length > 0) {
-        toast.showInfo(`${newMeetings.length}개의 새 모임이 생성되었습니다`, '모임 업데이트')
+        toastContext.showInfo(`${newMeetings.length}개의 새 모임이 생성되었습니다`, '모임 업데이트')
       }
       
       if (deletedMeetings.length > 0) {
-        toast.showInfo(`${deletedMeetings.length}개의 모임이 삭제되었습니다`, '모임 업데이트')
+        toastContext.showInfo(`${deletedMeetings.length}개의 모임이 삭제되었습니다`, '모임 업데이트')
       }
 
       if (statusChangedMeetings.length > 0) {
         statusChangedMeetings.forEach(meeting => {
           if (meeting.status === 'closed') {
-            toast.showWarning(`"${meeting.title}" 모임의 모집이 마감되었습니다`, '모임 상태 변경')
+            toastContext.showWarning(`"${meeting.title}" 모임의 모집이 마감되었습니다`, '모임 상태 변경')
           }
         })
       }
@@ -96,27 +102,36 @@ export const useRealtimeUpdates = (data, dataType) => {
       )
 
       if (newNotifications.length > 0) {
-        toast.showInfo(`${newNotifications.length}개의 새 알림이 있습니다`, '알림')
+        toastContext.showInfo(`${newNotifications.length}개의 새 알림이 있습니다`, '알림')
       }
     }
 
     previousDataRef.current = data
-  }, [data, dataType, toast])
+  }, [data, dataType, toastContext])
 }
 
 export const useOptimisticUpdates = () => {
-  const toast = useToast()
+  const toastContext = useContext(ToastContext)
+  
+  // ToastProvider가 없으면 빈 함수들을 반환
+  if (!toastContext) {
+    return {
+      showOptimisticSuccess: () => {},
+      showOptimisticError: () => {},
+      showLoadingState: () => {}
+    }
+  }
 
   const showOptimisticSuccess = (action, itemName) => {
-    toast.showSuccess(`${itemName} ${action}이 완료되었습니다`, '성공')
+    toastContext.showSuccess(`${itemName} ${action}이 완료되었습니다`, '성공')
   }
 
   const showOptimisticError = (action, itemName, error) => {
-    toast.showError(`${itemName} ${action}에 실패했습니다: ${error.message || error}`, '오류')
+    toastContext.showError(`${itemName} ${action}에 실패했습니다: ${error.message || error}`, '오류')
   }
 
   const showLoadingState = (action, itemName) => {
-    toast.showInfo(`${itemName} ${action} 중...`, '처리 중')
+    toastContext.showInfo(`${itemName} ${action} 중...`, '처리 중')
   }
 
   return {
