@@ -9,6 +9,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 
 // 동적 import를 사용한 지연 로딩
 const Calendar = lazy(() => import('./components/Calendar'))
+const CalendarView = lazy(() => import('./components/CalendarView'))
 const Dashboard = lazy(() => import('./components/Dashboard'))
 const EventModal = lazy(() => import('./components/EventModal'))
 const ScheduleGrid = lazy(() => import('./components/ScheduleGrid'))
@@ -601,7 +602,7 @@ function App() {
                 currentUser={user}
               />
             ) : view === 'schedule' ? (
-              <ScheduleGrid
+              <CalendarView
                 events={events}
                 onEventClick={openEventModal}
                 onAddEvent={() => openEventModal()}
