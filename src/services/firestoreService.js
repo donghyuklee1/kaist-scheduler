@@ -660,6 +660,46 @@ export const cancelJoinRequest = async (meetingId, userId) => {
   }
 }
 
+// 모임 모집 상태 업데이트
+export const updateMeetingStatus = async (meetingId, status, userId) => {
+  try {
+    console.log('모임 상태 업데이트:', { meetingId, status, userId })
+    
+    if (!db) {
+      throw new Error('Firestore 데이터베이스가 초기화되지 않았습니다.')
+    }
+    
+    const meetingRef = doc(db, COLLECTIONS.MEETINGS, meetingId)
+    
+    // 현재 모임 데이터를 가져와서 소유자인지 확인
+    const meetingDoc = await getDoc(meetingRef)
+    if (!meetingDoc.exists()) {
+      throw new Error('모임을 찾을 수 없습니다')
+    }
+    
+    const meetingData = meetingDoc.data()
+    if (meetingData.owner !== userId) {
+      throw new Error('모임 소유자만 상태를 변경할 수 있습니다')
+    }
+    
+    // 유효한 상태인지 확인
+    const validStatuses = ['open', 'closed', 'full']
+    if (!validStatuses.includes(status)) {
+      throw new Error('유효하지 않은 상태입니다')
+    }
+    
+    await updateDoc(meetingRef, {
+      status: status,
+      updatedAt: serverTimestamp()
+    })
+    
+    console.log('모임 상태 업데이트 성공:', { meetingId, status })
+  } catch (error) {
+    console.error('모임 상태 업데이트 실패:', error)
+    throw error
+  }
+}
+
 // 출석 관리 관련 함수들
 
 // 6자리 랜덤 번호 생성

@@ -12,6 +12,7 @@ import {
   sendJoinRequest,
   handleJoinRequest,
   cancelJoinRequest,
+  updateMeetingStatus,
   getParticipantsCountForSlot,
   startAttendanceCheck,
   endAttendanceCheck,
@@ -366,6 +367,30 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
         await deleteAnnouncement(meeting.id, announcementId, currentUser.uid)
       } catch (error) {
         alert(error.message)
+      }
+    }
+  }
+
+  // 모집 상태 변경 함수
+  const handleStatusChange = async (newStatus) => {
+    if (!isOwner) {
+      alert('모임 소유자만 상태를 변경할 수 있습니다.')
+      return
+    }
+
+    const statusText = {
+      'open': '모집중',
+      'closed': '모집마감',
+      'full': '정원초과'
+    }
+
+    if (window.confirm(`모임 상태를 "${statusText[newStatus]}"으로 변경하시겠습니까?`)) {
+      try {
+        await updateMeetingStatus(meeting.id, newStatus, currentUser.uid)
+        alert(`모임 상태가 "${statusText[newStatus]}"으로 변경되었습니다.`)
+      } catch (error) {
+        console.error('상태 변경 실패:', error)
+        alert('상태 변경에 실패했습니다: ' + error.message)
       }
     }
   }
@@ -766,6 +791,22 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={() => setActiveTab('management')}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 ${
+                    activeTab === 'management'
+                      ? 'bg-kaist-blue text-white shadow-lg'
+                      : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <Settings className="w-4 h-4" />
+                  <span className="font-medium">모임 관리</span>
+                </motion.button>
+              )}
+
+              {isOwner && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setActiveTab('requests')}
                   className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 ${
                     activeTab === 'requests'
@@ -850,6 +891,22 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                     <Bell className="w-5 h-5" />
                     <span className="text-xs font-medium">공지사항</span>
                   </motion.button>
+
+                  {isOwner && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setActiveTab('management')}
+                      className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] ${
+                        activeTab === 'management'
+                          ? 'bg-kaist-blue text-white shadow-lg'
+                          : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      <Settings className="w-5 h-5" />
+                      <span className="text-xs font-medium">모임관리</span>
+                    </motion.button>
+                  )}
 
                   {isOwner && (
                     <motion.button
@@ -1840,6 +1897,149 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                     <p className="text-gray-500 dark:text-gray-400">대기 중인 참가 신청이 없습니다</p>
                   </div>
                 )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* 모임 관리 탭 */}
+          {activeTab === 'management' && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-4 md:mb-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0 mb-3 md:mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-white mb-1 md:mb-2">
+                      모임 관리
+                    </h3>
+                    <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                      모임의 상태와 설정을 관리하세요
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 모집 상태 관리 */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
+                <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                  <Settings className="w-5 h-5 mr-2 text-blue-500" />
+                  모집 상태 관리
+                </h4>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div>
+                      <div className="font-medium text-gray-800 dark:text-white">현재 모집 상태</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {meeting?.status === 'open' && '모집중 - 새로운 참가 신청을 받고 있습니다'}
+                        {meeting?.status === 'closed' && '모집마감 - 새로운 참가 신청을 받지 않습니다'}
+                        {meeting?.status === 'full' && '정원초과 - 최대 참가자 수에 도달했습니다'}
+                      </div>
+                    </div>
+                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      meeting?.status === 'open' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' :
+                      meeting?.status === 'closed' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300' :
+                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300'
+                    }`}>
+                      {meeting?.status === 'open' && '모집중'}
+                      {meeting?.status === 'closed' && '모집마감'}
+                      {meeting?.status === 'full' && '정원초과'}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleStatusChange('open')}
+                      disabled={meeting?.status === 'open'}
+                      className={`p-4 rounded-lg border-2 transition-all ${
+                        meeting?.status === 'open'
+                          ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
+                          : 'border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-700 text-gray-700 dark:text-gray-300'
+                      } disabled:cursor-default`}
+                    >
+                      <div className="text-center">
+                        <div className="font-medium mb-1">모집중</div>
+                        <div className="text-xs opacity-75">새로운 참가 신청 허용</div>
+                      </div>
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleStatusChange('closed')}
+                      disabled={meeting?.status === 'closed'}
+                      className={`p-4 rounded-lg border-2 transition-all ${
+                        meeting?.status === 'closed'
+                          ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                          : 'border-gray-200 dark:border-gray-600 hover:border-red-300 dark:hover:border-red-700 text-gray-700 dark:text-gray-300'
+                      } disabled:cursor-default`}
+                    >
+                      <div className="text-center">
+                        <div className="font-medium mb-1">모집마감</div>
+                        <div className="text-xs opacity-75">새로운 참가 신청 차단</div>
+                      </div>
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleStatusChange('full')}
+                      disabled={meeting?.status === 'full'}
+                      className={`p-4 rounded-lg border-2 transition-all ${
+                        meeting?.status === 'full'
+                          ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300'
+                          : 'border-gray-200 dark:border-gray-600 hover:border-yellow-300 dark:hover:border-yellow-700 text-gray-700 dark:text-gray-300'
+                      } disabled:cursor-default`}
+                    >
+                      <div className="text-center">
+                        <div className="font-medium mb-1">정원초과</div>
+                        <div className="text-xs opacity-75">최대 참가자 수 도달</div>
+                      </div>
+                    </motion.button>
+                  </div>
+                </div>
+              </div>
+
+              {/* 모임 정보 요약 */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                  <Users className="w-5 h-5 mr-2 text-blue-500" />
+                  모임 정보 요약
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="text-sm text-blue-600 dark:text-blue-400 mb-1">총 참가자</div>
+                    <div className="text-2xl font-bold text-blue-800 dark:text-blue-300">
+                      {meeting?.participants?.filter(p => p.status === 'approved' || p.status === 'owner').length || 0}명
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div className="text-sm text-green-600 dark:text-green-400 mb-1">대기 중인 신청</div>
+                    <div className="text-2xl font-bold text-green-800 dark:text-green-300">
+                      {meeting?.participants?.filter(p => p.status === 'pending').length || 0}건
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <div className="text-sm text-purple-600 dark:text-purple-400 mb-1">공지사항</div>
+                    <div className="text-2xl font-bold text-purple-800 dark:text-purple-300">
+                      {meeting?.announcements?.length || 0}개
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                    <div className="text-sm text-orange-600 dark:text-orange-400 mb-1">출석 세션</div>
+                    <div className="text-2xl font-bold text-orange-800 dark:text-orange-300">
+                      {getAttendanceHistory(meeting).length}회
+                    </div>
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
