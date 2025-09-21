@@ -421,7 +421,8 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
         >
           {/* Tab Navigation */}
           <div className="mb-8">
-            <div className="flex space-x-2 glass-effect p-1 rounded-xl">
+            {/* Desktop Tab Navigation */}
+            <div className="hidden md:flex space-x-2 glass-effect p-1 rounded-xl">
               {canViewSchedule && (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -504,6 +505,96 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                   )}
                 </motion.button>
               )}
+            </div>
+
+            {/* Mobile Tab Navigation - Horizontal Scroll */}
+            <div className="md:hidden">
+              <div className="overflow-x-auto">
+                <div className="flex space-x-2 pb-2 min-w-max">
+                  {canViewSchedule && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setActiveTab('schedule')}
+                      className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] ${
+                        activeTab === 'schedule'
+                          ? 'bg-kaist-blue text-white shadow-lg'
+                          : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      <Calendar className="w-5 h-5" />
+                      <span className="text-xs font-medium">시간표</span>
+                    </motion.button>
+                  )}
+
+                  {canViewSchedule && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setActiveTab('attendance')}
+                      className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] ${
+                        activeTab === 'attendance'
+                          ? 'bg-kaist-blue text-white shadow-lg'
+                          : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      <BarChart3 className="w-5 h-5" />
+                      <span className="text-xs font-medium">참석율</span>
+                    </motion.button>
+                  )}
+
+                  {canViewSchedule && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setActiveTab('timeCoordination')}
+                      className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] ${
+                        activeTab === 'timeCoordination'
+                          ? 'bg-kaist-blue text-white shadow-lg'
+                          : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      <Clock className="w-5 h-5" />
+                      <span className="text-xs font-medium">시간조율</span>
+                    </motion.button>
+                  )}
+
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setActiveTab('announcements')}
+                    className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] ${
+                      activeTab === 'announcements'
+                        ? 'bg-kaist-blue text-white shadow-lg'
+                        : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    <Bell className="w-5 h-5" />
+                    <span className="text-xs font-medium">공지사항</span>
+                  </motion.button>
+
+                  {isOwner && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setActiveTab('requests')}
+                      className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] relative ${
+                        activeTab === 'requests'
+                          ? 'bg-kaist-blue text-white shadow-lg'
+                          : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      <Users className="w-5 h-5" />
+                      <span className="text-xs font-medium">참가신청</span>
+                      {meeting?.participants?.filter(p => p.status === 'pending').length > 0 && (
+                        <span className="bg-red-500 text-white text-xs px-1 py-0.5 rounded-full absolute -top-1 -right-1">
+                          {meeting.participants.filter(p => p.status === 'pending').length}
+                        </span>
+                      )}
+                    </motion.button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 

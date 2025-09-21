@@ -113,14 +113,14 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
                 {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </motion.button>
 
-              {/* 알림 버튼 - 모바일에서 더 작게 */}
+              {/* 알림 버튼 - 데스크톱에서만 표시 */}
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowNotificationModal(true)}
-                className="relative p-2 md:p-3 bg-white dark:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-kaist-blue dark:hover:text-blue-400"
+                className="hidden md:block relative p-3 bg-white dark:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-kaist-blue dark:hover:text-blue-400"
               >
-                <Bell className="w-4 h-4 md:w-5 md:h-5" />
+                <Bell className="w-5 h-5" />
                 {/* 읽지 않은 알림 개수 표시 */}
                 {(() => {
                   const unreadCount = meetings.reduce((count, meeting) => {
@@ -136,7 +136,7 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                      className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold"
                     >
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </motion.div>
@@ -144,14 +144,14 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
                 })()}
               </motion.button>
               
-              {/* 다크모드 토글 */}
+              {/* 다크모드 토글 - 데스크톱에서만 표시 */}
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={toggleDarkMode}
-                className="p-2 md:p-3 bg-white dark:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-kaist-blue dark:hover:text-blue-400"
+                className="hidden md:block p-3 bg-white dark:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-kaist-blue dark:hover:text-blue-400"
               >
-                {isDarkMode ? <Sun className="w-4 h-4 md:w-5 md:h-5" /> : <Moon className="w-4 h-4 md:w-5 md:h-5" />}
+                {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </motion.button>
               
               {/* 일정 추가 버튼 - 모바일에서 아이콘만 */}
@@ -264,6 +264,50 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
 
                 {/* 모바일 메뉴 하단 액션 버튼들 */}
                 <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-600 space-y-3">
+                  {/* 알림 버튼 */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setShowNotificationModal(true)
+                      setShowMobileMenu(false)
+                    }}
+                    className="w-full flex items-center space-x-3 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <Bell className="w-5 h-5" />
+                    <span className="font-medium">알림</span>
+                    {(() => {
+                      const unreadCount = meetings.reduce((count, meeting) => {
+                        if (meeting.announcements && Array.isArray(meeting.announcements)) {
+                          return count + meeting.announcements.filter(announcement => 
+                            (announcement.priority === 'high' || announcement.priority === 'urgent')
+                          ).length
+                        }
+                        return count
+                      }, 0)
+                      
+                      return unreadCount > 0 ? (
+                        <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full ml-auto">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      ) : null
+                    })()}
+                  </motion.button>
+
+                  {/* 다크모드 토글 */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      toggleDarkMode()
+                      setShowMobileMenu(false)
+                    }}
+                    className="w-full flex items-center space-x-3 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                    <span className="font-medium">{isDarkMode ? '라이트 모드' : '다크 모드'}</span>
+                  </motion.button>
+
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
