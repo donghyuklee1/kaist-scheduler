@@ -228,40 +228,42 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
-      <div className="sticky top-0 z-40 glass-effect border-b border-white/20 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+      <div className="sticky top-0 z-40 glass-effect border-b border-white/20 p-3 md:p-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
+          <div className="flex items-center space-x-3 md:space-x-4">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onBack}
               className="p-2 rounded-xl bg-white dark:bg-gray-700 shadow-md hover:shadow-lg transition-all duration-300"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-300" />
             </motion.button>
             
-            <div>
-              <h1 className="text-2xl font-bold text-kaist-blue dark:text-white">
+            <div className="flex-1">
+              <h1 className="text-lg md:text-2xl font-bold text-kaist-blue dark:text-white">
                 모임 세부사항
               </h1>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 truncate">
                 {meeting?.title}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Users className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-              <span className="text-sm text-gray-600 dark:text-gray-300">
-                {meeting?.participants?.length || 0}명 참여
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <BarChart3 className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-              <span className="text-sm text-gray-600 dark:text-gray-300">
-                참석율 {getAttendanceRate()}%
-              </span>
+          <div className="flex items-center justify-between md:justify-end space-x-3 md:space-x-4">
+            <div className="flex items-center space-x-3 md:space-x-4">
+              <div className="flex items-center space-x-1 md:space-x-2">
+                <Users className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-300" />
+                <span className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
+                  {meeting?.participants?.length || 0}명
+                </span>
+              </div>
+              <div className="flex items-center space-x-1 md:space-x-2">
+                <BarChart3 className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-300" />
+                <span className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
+                  {getAttendanceRate()}%
+                </span>
+              </div>
             </div>
             
             {/* 개설자만 삭제 버튼 표시 */}
@@ -274,10 +276,10 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                     onDeleteMeeting(meeting.id)
                   }
                 }}
-                className="flex items-center space-x-2 px-4 py-2 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-200 dark:hover:bg-red-900/30 transition-all duration-300"
+                className="flex items-center space-x-1 md:space-x-2 px-2 md:px-4 py-2 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-200 dark:hover:bg-red-900/30 transition-all duration-300"
               >
                 <Trash2 className="w-4 h-4" />
-                <span className="text-sm font-medium">모임 삭제</span>
+                <span className="text-xs md:text-sm font-medium hidden md:inline">모임 삭제</span>
               </motion.button>
             )}
           </div>
@@ -291,47 +293,47 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="glass-effect rounded-2xl p-6 shadow-xl mb-6"
+          className="glass-effect rounded-2xl p-4 md:p-6 shadow-xl mb-6"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {/* 기본 정보 */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">모임 정보</h3>
+            <div className="space-y-3 md:space-y-4">
+              <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-white mb-3 md:mb-4">모임 정보</h3>
               
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-                    <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <div className="space-y-2 md:space-y-3">
+                <div className="flex items-center space-x-2 md:space-x-3">
+                  <div className="w-6 h-6 md:w-8 md:h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-3 h-3 md:w-4 md:h-4 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">모임 유형</p>
-                    <p className="font-medium text-gray-800 dark:text-white capitalize">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">모임 유형</p>
+                    <p className="font-medium text-sm md:text-base text-gray-800 dark:text-white capitalize truncate">
                       {meeting?.type || 'study'}
                     </p>
                   </div>
                 </div>
                 
                 {meeting?.location && (
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-                      <MapPin className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  <div className="flex items-center space-x-2 md:space-x-3">
+                    <div className="w-6 h-6 md:w-8 md:h-8 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-3 h-3 md:w-4 md:h-4 text-green-600 dark:text-green-400" />
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">장소</p>
-                      <p className="font-medium text-gray-800 dark:text-white">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">장소</p>
+                      <p className="font-medium text-sm md:text-base text-gray-800 dark:text-white truncate">
                         {meeting.location}
                       </p>
                     </div>
                   </div>
                 )}
                 
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-                    <Users className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <div className="flex items-center space-x-2 md:space-x-3">
+                  <div className="w-6 h-6 md:w-8 md:h-8 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Users className="w-3 h-3 md:w-4 md:h-4 text-purple-600 dark:text-purple-400" />
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">참여자 수</p>
-                    <p className="font-medium text-gray-800 dark:text-white">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">참여자 수</p>
+                    <p className="font-medium text-sm md:text-base text-gray-800 dark:text-white">
                       {meeting?.participants?.length || 0}명
                       {meeting?.maxParticipants && ` / ${meeting.maxParticipants}명`}
                     </p>
@@ -341,30 +343,30 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
             </div>
             
             {/* 담당자 정보 */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">담당자 정보</h3>
+            <div className="space-y-3 md:space-y-4">
+              <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-white mb-3 md:mb-4">담당자 정보</h3>
               
-              <div className="space-y-3">
+              <div className="space-y-2 md:space-y-3">
                 {meeting?.organizer ? (
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
-                      <User className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  <div className="flex items-center space-x-2 md:space-x-3">
+                    <div className="w-6 h-6 md:w-8 md:h-8 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <User className="w-3 h-3 md:w-4 md:h-4 text-orange-600 dark:text-orange-400" />
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">담당자</p>
-                      <p className="font-medium text-gray-800 dark:text-white">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">담당자</p>
+                      <p className="font-medium text-sm md:text-base text-gray-800 dark:text-white truncate">
                         {meeting.organizer}
                       </p>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                      <User className="w-4 h-4 text-gray-400" />
+                  <div className="flex items-center space-x-2 md:space-x-3">
+                    <div className="w-6 h-6 md:w-8 md:h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <User className="w-3 h-3 md:w-4 md:h-4 text-gray-400" />
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">담당자</p>
-                      <p className="font-medium text-gray-500 dark:text-gray-400">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">담당자</p>
+                      <p className="font-medium text-sm md:text-base text-gray-500 dark:text-gray-400">
                         정보 없음
                       </p>
                     </div>
@@ -372,25 +374,25 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                 )}
                 
                 {meeting?.organizerContact ? (
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-teal-100 dark:bg-teal-900/20 rounded-lg flex items-center justify-center">
-                      <Mail className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                  <div className="flex items-center space-x-2 md:space-x-3">
+                    <div className="w-6 h-6 md:w-8 md:h-8 bg-teal-100 dark:bg-teal-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Mail className="w-3 h-3 md:w-4 md:h-4 text-teal-600 dark:text-teal-400" />
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">연락처</p>
-                      <p className="font-medium text-gray-800 dark:text-white">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">연락처</p>
+                      <p className="font-medium text-sm md:text-base text-gray-800 dark:text-white truncate">
                         {meeting.organizerContact}
                       </p>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                      <Mail className="w-4 h-4 text-gray-400" />
+                  <div className="flex items-center space-x-2 md:space-x-3">
+                    <div className="w-6 h-6 md:w-8 md:h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Mail className="w-3 h-3 md:w-4 md:h-4 text-gray-400" />
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">연락처</p>
-                      <p className="font-medium text-gray-500 dark:text-gray-400">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">연락처</p>
+                      <p className="font-medium text-sm md:text-base text-gray-500 dark:text-gray-400">
                         정보 없음
                       </p>
                     </div>
@@ -536,63 +538,68 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
 
               {/* Time Grid */}
               <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                {/* Header */}
-                <div className="grid grid-cols-6 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-                  <div className="p-4 text-center font-medium text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-600">
-                    시간
-                  </div>
-                  {weekDays.map((day, index) => (
-                    <div key={day} className="p-4 text-center border-r border-gray-200 dark:border-gray-600 last:border-r-0">
-                      <div className="font-medium text-gray-800 dark:text-gray-200">{day}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">{weekDates[index]}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Time Slots */}
-                <div className="max-h-96 overflow-y-auto">
-                  {timeSlots.map((slot) => (
-                    <div key={slot.id} className="grid grid-cols-6 border-b border-gray-100 dark:border-gray-700">
-                      {/* Time Label */}
-                      <div className="p-3 text-center text-sm text-gray-600 dark:text-gray-400 border-r border-gray-200 dark:border-gray-600">
-                        {slot.time}
+                {/* Mobile Horizontal Scroll Container */}
+                <div className="overflow-x-auto">
+                  <div className="min-w-[600px]">
+                    {/* Header */}
+                    <div className="grid grid-cols-6 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                      <div className="p-3 md:p-4 text-center font-medium text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-600 min-w-[80px]">
+                        시간
                       </div>
-
-                      {/* Day Columns */}
-                      {weekDays.map((_, dayIndex) => {
-                        const count = getParticipantCount(dayIndex, slot.id)
-                        return (
-                          <div
-                            key={dayIndex}
-                            className={`p-3 text-center text-xs font-medium border-r border-gray-200 dark:border-gray-600 last:border-r-0 ${getSlotColor(dayIndex, slot.id)}`}
-                          >
-                            {count > 0 && count}
-                          </div>
-                        )
-                      })}
+                      {weekDays.map((day, index) => (
+                        <div key={day} className="p-3 md:p-4 text-center border-r border-gray-200 dark:border-gray-600 last:border-r-0 min-w-[100px]">
+                          <div className="font-medium text-gray-800 dark:text-gray-200 text-sm md:text-base">{day}</div>
+                          <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">{weekDates[index]}</div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+
+                    {/* Time Slots */}
+                    <div className="max-h-96 overflow-y-auto">
+                      {timeSlots.map((slot) => (
+                        <div key={slot.id} className="grid grid-cols-6 border-b border-gray-100 dark:border-gray-700">
+                          {/* Time Label */}
+                          <div className="p-2 md:p-3 text-center text-xs md:text-sm text-gray-600 dark:text-gray-400 border-r border-gray-200 dark:border-gray-600 min-w-[80px]">
+                            {slot.time}
+                          </div>
+
+                          {/* Day Columns */}
+                          {weekDays.map((_, dayIndex) => {
+                            const count = getParticipantCount(dayIndex, slot.id)
+                            return (
+                              <div
+                                key={dayIndex}
+                                className={`p-2 md:p-3 text-center text-xs font-medium border-r border-gray-200 dark:border-gray-600 last:border-r-0 min-w-[100px] ${getSlotColor(dayIndex, slot.id)}`}
+                              >
+                                {count > 0 && count}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Legend */}
-              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <h4 className="font-medium text-gray-800 dark:text-white mb-2">범례</h4>
-                <div className="flex flex-wrap gap-4 text-sm">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 bg-green-500 rounded"></div>
+              <div className="mt-4 p-3 md:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <h4 className="font-medium text-gray-800 dark:text-white mb-2 text-sm md:text-base">범례</h4>
+                <div className="grid grid-cols-2 md:flex md:flex-wrap gap-2 md:gap-4 text-xs md:text-sm">
+                  <div className="flex items-center space-x-1 md:space-x-2">
+                    <div className="w-3 h-3 md:w-4 md:h-4 bg-green-500 rounded flex-shrink-0"></div>
                     <span className="text-gray-600 dark:text-gray-300">모든 참여자 가능</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 bg-green-300 rounded"></div>
+                  <div className="flex items-center space-x-1 md:space-x-2">
+                    <div className="w-3 h-3 md:w-4 md:h-4 bg-green-300 rounded flex-shrink-0"></div>
                     <span className="text-gray-600 dark:text-gray-300">80% 이상</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 bg-yellow-300 rounded"></div>
+                  <div className="flex items-center space-x-1 md:space-x-2">
+                    <div className="w-3 h-3 md:w-4 md:h-4 bg-yellow-300 rounded flex-shrink-0"></div>
                     <span className="text-gray-600 dark:text-gray-300">40-60%</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 bg-red-200 rounded"></div>
+                  <div className="flex items-center space-x-1 md:space-x-2">
+                    <div className="w-3 h-3 md:w-4 md:h-4 bg-red-200 rounded flex-shrink-0"></div>
                     <span className="text-gray-600 dark:text-gray-300">20% 미만</span>
                   </div>
                 </div>
