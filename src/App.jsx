@@ -581,8 +581,10 @@ function App() {
                   openEventModal({ date })
                 }}
                 onMeetingClick={(meeting) => {
+                  console.log('App.jsx - 모임 클릭 핸들러 호출:', meeting)
                   setSelectedMeeting(meeting)
                   setShowMeetingDetails(true)
+                  console.log('App.jsx - 상태 업데이트 완료')
                 }}
                 onViewChange={setView}
                 currentUser={user}

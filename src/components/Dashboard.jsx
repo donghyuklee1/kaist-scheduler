@@ -237,14 +237,21 @@ const Dashboard = ({
                     key={announcement.id}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      // 해당 모임 찾기
-                      const meeting = meetings.find(m => m.title === announcement.meetingTitle)
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      console.log('중요 공지사항 클릭:', announcement)
+                      // 해당 모임 찾기 (meetingId 사용)
+                      const meeting = meetings.find(m => m.id === announcement.meetingId)
+                      console.log('찾은 모임:', meeting)
                       if (meeting && onMeetingClick) {
+                        console.log('모임 클릭 핸들러 호출')
                         onMeetingClick(meeting)
+                      } else {
+                        console.log('모임을 찾을 수 없거나 핸들러가 없음')
                       }
                     }}
-                    className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
+                    className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl cursor-pointer hover:shadow-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-200"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 pr-4">
@@ -384,8 +391,18 @@ const Dashboard = ({
                     key={meeting.id}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => onMeetingClick(meeting)}
-                    className="p-3 md:p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl hover:shadow-md transition-all duration-200 cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      console.log('참여중인 모임 클릭:', meeting)
+                      if (onMeetingClick) {
+                        console.log('모임 클릭 핸들러 호출')
+                        onMeetingClick(meeting)
+                      } else {
+                        console.log('모임 클릭 핸들러가 없음')
+                      }
+                    }}
+                    className="p-3 md:p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2 md:space-x-3 flex-1 pr-2 md:pr-4">
