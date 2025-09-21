@@ -154,15 +154,15 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
                 {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </motion.button>
               
-              {/* 일정 추가 버튼 - 모바일에서 아이콘만 */}
+              {/* 일정 추가 버튼 - 모바일 최적화 */}
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onAddEvent}
-                className="btn-primary flex items-center space-x-1 md:space-x-2 px-2 md:px-4 py-2 md:py-3"
+                className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg active:scale-95 px-3 md:px-4 py-2 md:py-3 min-h-[44px] min-w-[44px] touch-action:manipulation"
               >
-                <Plus className="w-4 h-4" />
-                <span className="hidden md:inline">일정 추가</span>
+                <Plus className="w-4 h-4 md:w-5 md:h-5" />
+                <span className="hidden md:inline ml-2">일정 추가</span>
               </motion.button>
 
               {/* 사용자 프로필 또는 로그인 버튼 */}

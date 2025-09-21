@@ -346,25 +346,25 @@ const Dashboard = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="glass-effect rounded-2xl p-6 shadow-xl"
+            className="glass-effect rounded-2xl p-4 md:p-6 shadow-xl"
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => onViewChange('meetings')}
-                className="flex items-center text-xl font-bold text-gray-800 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer"
+                className="flex items-center text-lg md:text-xl font-bold text-gray-800 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer"
               >
-                <Users className="w-5 h-5 mr-2 text-purple-500" />
+                <Users className="w-4 h-4 md:w-5 md:h-5 mr-2 text-purple-500" />
                 참여중인 모임
               </motion.button>
-              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                <CheckCircle className="w-4 h-4 mr-1" />
+              <div className="flex items-center text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                <CheckCircle className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                 {joinedMeetings.length}개
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               {joinedMeetings.length > 0 ? (
                 joinedMeetings.map((meeting) => (
                   <motion.div
@@ -372,29 +372,28 @@ const Dashboard = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => onMeetingClick(meeting)}
-                    className="p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl hover:shadow-md transition-all duration-200 cursor-pointer"
+                    className="p-3 md:p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl hover:shadow-md transition-all duration-200 cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3 flex-1 pr-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
-                          <Users className="w-5 h-5 text-white" />
+                      <div className="flex items-center space-x-2 md:space-x-3 flex-1 pr-2 md:pr-4">
+                        <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Users className="w-4 h-4 md:w-5 md:h-5 text-white" />
                         </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-800 dark:text-white">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-sm md:text-base text-gray-800 dark:text-white truncate">
                             {meeting.title}
                           </h3>
-                          <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                            <span className="capitalize">{meeting.type}</span>
-                            <span>•</span>
-                            <span>{meeting.participants.length}명 참여</span>
+                          <div className="flex flex-col md:flex-row md:items-center md:space-x-2 space-y-1 md:space-y-0 text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center space-x-1 md:space-x-2">
+                              <span className="capitalize">{meeting.type}</span>
+                              <span className="hidden md:inline">•</span>
+                              <span>{meeting.participants.length}명 참여</span>
+                            </div>
                             {meeting.location && (
-                              <>
-                                <span>•</span>
-                                <div className="flex items-center">
-                                  <MapPin className="w-3 h-3 mr-1" />
-                                  <span>{meeting.location}</span>
-                                </div>
-                              </>
+                              <div className="flex items-center">
+                                <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
+                                <span className="truncate">{meeting.location}</span>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -404,9 +403,9 @@ const Dashboard = ({
                   </motion.div>
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>참여중인 모임이 없습니다</p>
+                <div className="text-center py-6 md:py-8 text-gray-500 dark:text-gray-400">
+                  <Users className="w-8 h-8 md:w-12 md:h-12 mx-auto mb-2 md:mb-3 opacity-50" />
+                  <p className="text-sm md:text-base">참여중인 모임이 없습니다</p>
                 </div>
               )}
             </div>
