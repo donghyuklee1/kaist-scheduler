@@ -269,12 +269,14 @@ export const createMeeting = async (meetingData, userId) => {
     const meetingDoc = {
       ...meetingData,
       owner: userId,
+      ownerName: meetingData.organizer || '미정', // 개설자 이름 설정
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       participants: [{
         userId,
         status: 'owner',
-        joinedAt: new Date().toISOString()
+        joinedAt: new Date().toISOString(),
+        displayName: meetingData.organizer || '미정'
       }],
       availability: {},
       announcements: [],
@@ -1188,6 +1190,9 @@ export const createRecurringEventsForParticipants = async (meetingId, meetingDat
     
     await batch.commit()
     console.log('반복 모임 일정 생성 완료:', events.length, '개 일정')
+    
+    // 이벤트 구독이 실시간으로 업데이트되도록 약간의 지연 추가
+    await new Promise(resolve => setTimeout(resolve, 100))
     
   } catch (error) {
     console.error('반복 모임 일정 생성 실패:', error)

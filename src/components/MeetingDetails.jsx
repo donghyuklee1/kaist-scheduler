@@ -354,7 +354,7 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
         recurringSchedule: scheduleData
       })
       
-      alert('반복 모임 일정이 설정되었습니다!')
+      alert('반복 모임 일정이 설정되었습니다! 모든 참여자의 개인 일정에 자동으로 반영됩니다.')
       setShowScheduleModal(false)
       
     } catch (error) {
