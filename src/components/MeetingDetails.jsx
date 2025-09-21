@@ -16,7 +16,9 @@ import {
   startAttendanceCheck,
   endAttendanceCheck,
   submitAttendanceCode,
-  getAttendanceStatus
+  getAttendanceStatus,
+  getMemberAttendanceRates,
+  getOptimalMeetingTimes
 } from '../services/firestoreService'
 import TimeCoordination from './TimeCoordination'
 
@@ -230,9 +232,21 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
         const now = new Date()
         const remaining = Math.max(0, Math.floor((endTime - now) / 1000))
         setTimeLeft(remaining)
+      } else if (!status.isActive) {
+        setTimeLeft(0)
       }
     }
   }, [meeting])
+
+  // 출석 상태가 변경될 때마다 실시간 업데이트
+  useEffect(() => {
+    if (attendanceStatus?.isActive && attendanceStatus?.endTime) {
+      const endTime = new Date(attendanceStatus.endTime)
+      const now = new Date()
+      const remaining = Math.max(0, Math.floor((endTime - now) / 1000))
+      setTimeLeft(remaining)
+    }
+  }, [attendanceStatus])
 
   const participantSummary = getParticipantSummary()
 
@@ -700,6 +714,45 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                 </p>
               </div>
 
+              {/* 최적의 모임 시간 제안 */}
+              {(() => {
+                const optimalTimes = getOptimalMeetingTimes(meeting)
+                return optimalTimes.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">
+                      💡 최적의 모임 시간 제안
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {optimalTimes.slice(0, 6).map((timeSlot, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="p-3 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg border border-green-200 dark:border-green-700"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium text-gray-800 dark:text-white">
+                                {timeSlot.day} {timeSlot.time}
+                              </div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
+                                {timeSlot.availableCount}/{timeSlot.totalParticipants}명 가능
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                                {timeSlot.availabilityRate}%
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })()}
+
               {/* Time Grid */}
               <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                 {/* Mobile Horizontal Scroll Container */}
@@ -876,6 +929,50 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                           <p>아직 출석한 사람이 없습니다</p>
                         </div>
                       )}
+                    </div>
+                  </div>
+
+                  {/* 모임원별 출석률 목록 */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                    <h4 className="font-semibold text-gray-800 dark:text-white mb-4">모임원별 출석률</h4>
+                    <div className="space-y-3">
+                      {(() => {
+                        const memberRates = getMemberAttendanceRates(meeting)
+                        return memberRates.length > 0 ? (
+                          memberRates.map((member, index) => (
+                            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                                  <span className="text-white text-sm font-bold">
+                                    {member.displayName.charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                                <div>
+                                  <div className="font-medium text-gray-800 dark:text-white">
+                                    {member.displayName}
+                                  </div>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    {member.attendanceCount}회 출석
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-lg font-semibold text-gray-800 dark:text-white">
+                                  {member.attendanceRate}%
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                  출석률
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                            <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                            <p>출석 데이터가 없습니다</p>
+                          </div>
+                        )
+                      })()}
                     </div>
                   </div>
                 </div>

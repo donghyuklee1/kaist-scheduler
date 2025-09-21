@@ -755,7 +755,9 @@ export const getAttendanceStatus = (meeting) => {
   }
   
   const attendees = meeting.attendanceCheck.attendees || []
-  const totalParticipants = meeting?.participants?.length || 0
+  // 모임장을 제외한 참여자 수 계산
+  const participantsExcludingOwner = meeting?.participants?.filter(p => p.status !== 'owner') || []
+  const totalParticipants = participantsExcludingOwner.length
   
   return {
     isActive: meeting.attendanceCheck.isActive,
@@ -783,4 +785,96 @@ export const isMeetingParticipant = (meeting, userId) => {
 export const hasPendingRequest = (meeting, userId) => {
   if (!meeting || !userId) return false
   return meeting.participants?.some(p => p.userId === userId && p.status === 'pending')
+}
+
+// 모임원별 출석률 계산
+export const getMemberAttendanceRates = (meeting) => {
+  if (!meeting?.participants || !meeting?.attendanceCheck) {
+    return []
+  }
+
+  const attendees = meeting.attendanceCheck.attendees || []
+  const totalAttendanceChecks = meeting.attendanceCheck.totalChecks || 0
+
+  return meeting.participants
+    .filter(p => p.status !== 'owner') // 모임장 제외
+    .map(participant => {
+      const memberAttendances = attendees.filter(attendee => attendee.userId === participant.userId)
+      const attendanceRate = totalAttendanceChecks > 0 
+        ? Math.round((memberAttendances.length / totalAttendanceChecks) * 100)
+        : 0
+
+      return {
+        userId: participant.userId,
+        displayName: participant.displayName || `사용자 ${participant.userId}`,
+        status: participant.status,
+        attendanceCount: memberAttendances.length,
+        totalChecks: totalAttendanceChecks,
+        attendanceRate: attendanceRate
+      }
+    })
+    .sort((a, b) => b.attendanceRate - a.attendanceRate) // 출석률 높은 순으로 정렬
+}
+
+// 최적의 모임 시간 제안
+export const getOptimalMeetingTimes = (meeting) => {
+  if (!meeting?.availability || !meeting?.participants) {
+    return []
+  }
+
+  const participants = meeting.participants.filter(p => p.status === 'approved' || p.status === 'owner')
+  const totalParticipants = participants.length
+  
+  if (totalParticipants === 0) {
+    return []
+  }
+
+  const timeSlots = []
+  const weekDays = ['월', '화', '수', '목', '금']
+  
+  // 시간 슬롯 생성 (9시부터 23시까지, 30분 단위)
+  for (let hour = 9; hour <= 23; hour++) {
+    for (let minute = 0; minute < 60; minute += 30) {
+      const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+      timeSlots.push(timeString)
+    }
+  }
+
+  const optimalTimes = []
+
+  // 각 요일별로 최적 시간 계산
+  weekDays.forEach((day, dayIndex) => {
+    timeSlots.forEach((time, timeIndex) => {
+      const slotId = `${dayIndex}-${timeIndex}`
+      let availableCount = 0
+
+      // 각 참여자의 가용성 확인
+      participants.forEach(participant => {
+        const userSlots = meeting.availability[participant.userId] || []
+        if (userSlots.includes(slotId)) {
+          availableCount++
+        }
+      })
+
+      const availabilityRate = totalParticipants > 0 ? (availableCount / totalParticipants) * 100 : 0
+
+      if (availabilityRate >= 50) { // 50% 이상 가능한 시간만 제안
+        optimalTimes.push({
+          day: day,
+          dayIndex: dayIndex,
+          time: time,
+          timeIndex: timeIndex,
+          slotId: slotId,
+          availableCount: availableCount,
+          totalParticipants: totalParticipants,
+          availabilityRate: Math.round(availabilityRate)
+        })
+      }
+    })
+  })
+
+  // 가용률 높은 순으로 정렬하고 상위 10개만 반환
+  return optimalTimes
+    .sort((a, b) => b.availabilityRate - a.availabilityRate)
+    .slice(0, 10)
 }
