@@ -878,3 +878,37 @@ export const getOptimalMeetingTimes = (meeting) => {
     .sort((a, b) => b.availabilityRate - a.availabilityRate)
     .slice(0, 10)
 }
+
+// 사용자 가용성 업데이트
+export const updateUserAvailability = async (meetingId, userId, availability) => {
+  if (!db) {
+    throw new Error('Firebase가 초기화되지 않았습니다.')
+  }
+
+  try {
+    const meetingRef = doc(db, 'meetings', meetingId)
+    
+    // 기존 가용성 데이터 가져오기
+    const meetingDoc = await getDoc(meetingRef)
+    if (!meetingDoc.exists()) {
+      throw new Error('모임을 찾을 수 없습니다.')
+    }
+
+    const meetingData = meetingDoc.data()
+    const currentAvailability = meetingData.availability || {}
+    
+    // 사용자의 가용성 업데이트
+    currentAvailability[userId] = availability
+
+    // 모임 문서 업데이트
+    await updateDoc(meetingRef, {
+      availability: currentAvailability,
+      updatedAt: serverTimestamp()
+    })
+
+    console.log('가용성 업데이트 성공:', userId, availability.length, '개 슬롯')
+  } catch (error) {
+    console.error('가용성 업데이트 실패:', error)
+    throw error
+  }
+}

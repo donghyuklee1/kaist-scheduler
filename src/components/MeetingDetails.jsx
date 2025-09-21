@@ -18,7 +18,8 @@ import {
   submitAttendanceCode,
   getAttendanceStatus,
   getMemberAttendanceRates,
-  getOptimalMeetingTimes
+  getOptimalMeetingTimes,
+  updateUserAvailability
 } from '../services/firestoreService'
 import TimeCoordination from './TimeCoordination'
 
@@ -278,6 +279,22 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
       } catch (error) {
         alert(error.message)
       }
+    }
+  }
+
+  // 가용성 변경 처리
+  const handleAvailabilityChange = async (availability) => {
+    if (!currentUser || !meeting) {
+      console.error('사용자 또는 모임 정보가 없습니다.')
+      return
+    }
+
+    try {
+      await updateUserAvailability(meeting.id, currentUser.uid, availability)
+      console.log('가용성 업데이트 완료:', availability.length, '개 슬롯')
+    } catch (error) {
+      console.error('가용성 업데이트 실패:', error)
+      alert('가용성 저장에 실패했습니다: ' + error.message)
     }
   }
 
@@ -717,6 +734,9 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
               {/* 최적의 모임 시간 제안 */}
               {(() => {
                 const optimalTimes = getOptimalMeetingTimes(meeting)
+                console.log('Meeting data:', meeting)
+                console.log('Availability data:', meeting?.availability)
+                console.log('Optimal times:', optimalTimes)
                 return optimalTimes.length > 0 && (
                   <div className="mb-6">
                     <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">
@@ -1049,6 +1069,8 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                 meeting={meeting}
                 currentUser={currentUser}
                 onBack={() => setActiveTab('schedule')}
+                onComplete={() => setActiveTab('schedule')}
+                onAvailabilityChange={handleAvailabilityChange}
               />
             </motion.div>
           )}
@@ -1493,6 +1515,11 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                 meeting={meeting}
                 currentUser={currentUser}
                 onBack={() => setShowMobileTimeCoordination(false)}
+                onComplete={() => {
+                  setShowMobileTimeCoordination(false)
+                  setActiveTab('schedule')
+                }}
+                onAvailabilityChange={handleAvailabilityChange}
                 isMobileModal={true}
               />
             </div>
