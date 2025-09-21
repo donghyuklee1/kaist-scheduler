@@ -617,3 +617,166 @@ export const cancelJoinRequest = async (meetingId, userId) => {
     throw error
   }
 }
+
+// 출석 관리 관련 함수들
+
+// 6자리 랜덤 번호 생성
+export const generateAttendanceCode = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString()
+}
+
+// 출석 확인 시작
+export const startAttendanceCheck = async (meetingId, userId) => {
+  try {
+    if (!db) {
+      throw new Error('Firebase가 초기화되지 않았습니다')
+    }
+
+    const meetingRef = doc(db, COLLECTIONS.MEETINGS, meetingId)
+    
+    // 현재 모임 데이터를 가져와서 소유자인지 확인
+    const meetingDoc = await getDoc(meetingRef)
+    if (!meetingDoc.exists()) {
+      throw new Error('모임을 찾을 수 없습니다')
+    }
+    
+    const meetingData = meetingDoc.data()
+    if (meetingData.ownerId !== userId) {
+      throw new Error('모임 소유자만 출석 확인을 시작할 수 있습니다')
+    }
+    
+    const attendanceCode = generateAttendanceCode()
+    const endTime = new Date(Date.now() + 3 * 60 * 1000) // 3분 후
+    
+    await updateDoc(meetingRef, {
+      attendanceCheck: {
+        isActive: true,
+        code: attendanceCode,
+        startTime: serverTimestamp(),
+        endTime: endTime.toISOString(),
+        attendees: []
+      },
+      updatedAt: serverTimestamp()
+    })
+    
+    console.log('출석 확인 시작 성공:', attendanceCode)
+    return attendanceCode
+  } catch (error) {
+    console.error('출석 확인 시작 실패:', error)
+    throw error
+  }
+}
+
+// 출석 확인 종료
+export const endAttendanceCheck = async (meetingId, userId) => {
+  try {
+    if (!db) {
+      throw new Error('Firebase가 초기화되지 않았습니다')
+    }
+
+    const meetingRef = doc(db, COLLECTIONS.MEETINGS, meetingId)
+    
+    // 현재 모임 데이터를 가져와서 소유자인지 확인
+    const meetingDoc = await getDoc(meetingRef)
+    if (!meetingDoc.exists()) {
+      throw new Error('모임을 찾을 수 없습니다')
+    }
+    
+    const meetingData = meetingDoc.data()
+    if (meetingData.ownerId !== userId) {
+      throw new Error('모임 소유자만 출석 확인을 종료할 수 있습니다')
+    }
+    
+    await updateDoc(meetingRef, {
+      attendanceCheck: {
+        isActive: false,
+        code: null,
+        startTime: null,
+        endTime: null,
+        attendees: meetingData.attendanceCheck?.attendees || []
+      },
+      updatedAt: serverTimestamp()
+    })
+    
+    console.log('출석 확인 종료 성공')
+  } catch (error) {
+    console.error('출석 확인 종료 실패:', error)
+    throw error
+  }
+}
+
+// 출석 코드 입력
+export const submitAttendanceCode = async (meetingId, userId, code) => {
+  try {
+    if (!db) {
+      throw new Error('Firebase가 초기화되지 않았습니다')
+    }
+
+    const meetingRef = doc(db, COLLECTIONS.MEETINGS, meetingId)
+    
+    // 현재 모임 데이터를 가져와서 출석 확인이 활성화되어 있는지 확인
+    const meetingDoc = await getDoc(meetingRef)
+    if (!meetingDoc.exists()) {
+      throw new Error('모임을 찾을 수 없습니다')
+    }
+    
+    const meetingData = meetingDoc.data()
+    if (!meetingData.attendanceCheck?.isActive) {
+      throw new Error('출석 확인이 진행 중이 아닙니다')
+    }
+    
+    if (meetingData.attendanceCheck.code !== code) {
+      throw new Error('잘못된 출석 코드입니다')
+    }
+    
+    // 이미 출석한 사용자인지 확인
+    const existingAttendee = meetingData.attendanceCheck.attendees?.find(
+      attendee => attendee.userId === userId
+    )
+    
+    if (existingAttendee) {
+      throw new Error('이미 출석 확인을 완료했습니다')
+    }
+    
+    // 출석자 목록에 추가
+    const newAttendee = {
+      userId: userId,
+      timestamp: serverTimestamp()
+    }
+    
+    await updateDoc(meetingRef, {
+      'attendanceCheck.attendees': arrayUnion(newAttendee),
+      updatedAt: serverTimestamp()
+    })
+    
+    console.log('출석 확인 성공:', userId)
+    return true
+  } catch (error) {
+    console.error('출석 확인 실패:', error)
+    throw error
+  }
+}
+
+// 출석 현황 가져오기
+export const getAttendanceStatus = (meeting) => {
+  if (!meeting?.attendanceCheck) {
+    return {
+      isActive: false,
+      attendees: [],
+      totalParticipants: meeting?.participants?.length || 0,
+      attendanceRate: 0
+    }
+  }
+  
+  const attendees = meeting.attendanceCheck.attendees || []
+  const totalParticipants = meeting?.participants?.length || 0
+  
+  return {
+    isActive: meeting.attendanceCheck.isActive,
+    attendees: attendees,
+    totalParticipants: totalParticipants,
+    attendanceRate: totalParticipants > 0 ? Math.round((attendees.length / totalParticipants) * 100) : 0,
+    code: meeting.attendanceCheck.code,
+    endTime: meeting.attendanceCheck.endTime
+  }
+}

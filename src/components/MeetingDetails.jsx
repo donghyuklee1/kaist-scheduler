@@ -12,7 +12,11 @@ import {
   sendJoinRequest,
   handleJoinRequest,
   cancelJoinRequest,
-  getParticipantsCountForSlot 
+  getParticipantsCountForSlot,
+  startAttendanceCheck,
+  endAttendanceCheck,
+  submitAttendanceCode,
+  getAttendanceStatus
 } from '../services/firestoreService'
 import TimeCoordination from './TimeCoordination'
 
@@ -58,6 +62,11 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
     priority: 'normal'
   })
   const [isLoading, setIsLoading] = useState(false)
+  
+  // 출석 관리 관련 상태
+  const [attendanceCode, setAttendanceCode] = useState('')
+  const [timeLeft, setTimeLeft] = useState(0)
+  const [attendanceStatus, setAttendanceStatus] = useState(null)
 
   // 시간 슬롯 생성 (9시부터 23시까지, 30분 단위)
   const generateTimeSlots = () => {
@@ -149,6 +158,81 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
     
     return summary
   }
+
+  // 출석 관리 관련 함수들
+  const handleStartAttendance = async () => {
+    try {
+      setIsLoading(true)
+      const code = await startAttendanceCheck(meeting.id, currentUser.uid)
+      setAttendanceCode(code)
+      setTimeLeft(180) // 3분 = 180초
+      alert(`출석 확인이 시작되었습니다!\n출석 코드: ${code}`)
+    } catch (error) {
+      alert('출석 확인 시작에 실패했습니다: ' + error.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleEndAttendance = async () => {
+    try {
+      setIsLoading(true)
+      await endAttendanceCheck(meeting.id, currentUser.uid)
+      setAttendanceCode('')
+      setTimeLeft(0)
+      alert('출석 확인이 종료되었습니다.')
+    } catch (error) {
+      alert('출석 확인 종료에 실패했습니다: ' + error.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSubmitAttendanceCode = async () => {
+    if (!attendanceCode.trim()) {
+      alert('출석 코드를 입력해주세요.')
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      await submitAttendanceCode(meeting.id, currentUser.uid, attendanceCode.trim())
+      alert('출석 확인이 완료되었습니다!')
+      setAttendanceCode('')
+    } catch (error) {
+      alert('출석 확인에 실패했습니다: ' + error.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // 타이머 효과
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timer = setTimeout(() => {
+        setTimeLeft(timeLeft - 1)
+      }, 1000)
+      return () => clearTimeout(timer)
+    } else if (timeLeft === 0 && attendanceStatus?.isActive) {
+      // 시간이 끝나면 자동으로 출석 확인 종료
+      handleEndAttendance()
+    }
+  }, [timeLeft])
+
+  // 출석 상태 업데이트
+  useEffect(() => {
+    if (meeting) {
+      const status = getAttendanceStatus(meeting)
+      setAttendanceStatus(status)
+      
+      if (status.isActive && status.endTime) {
+        const endTime = new Date(status.endTime)
+        const now = new Date()
+        const remaining = Math.max(0, Math.floor((endTime - now) / 1000))
+        setTimeLeft(remaining)
+      }
+    }
+  }, [meeting])
 
   const participantSummary = getParticipantSummary()
 
@@ -464,7 +548,7 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                   }`}
                 >
                   <BarChart3 className="w-4 h-4" />
-                  <span className="font-medium">참석율</span>
+                  <span className="font-medium">출석관리</span>
                 </motion.button>
               )}
 
@@ -537,7 +621,7 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                       }`}
                     >
                       <BarChart3 className="w-5 h-5" />
-                      <span className="text-xs font-medium">참석율</span>
+                      <span className="text-xs font-medium">출석관리</span>
                     </motion.button>
                   )}
 
@@ -693,73 +777,167 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                  참석율 현황
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {getAttendanceRate()}%
-                    </div>
-                    <div className="text-sm text-blue-600 dark:text-blue-400">전체 참석율</div>
+              {isOwner ? (
+                // 모임장용 출석 관리 인터페이스
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                      출석 관리
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      모임원들의 출석을 확인하고 관리하세요
+                    </p>
                   </div>
-                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      {Object.keys(meeting?.availability || {}).length}
+
+                  {/* 출석 현황 */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                    <div className="text-center mb-6">
+                      <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+                        {attendanceStatus?.attendanceRate || 0}%
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        출석률 ({attendanceStatus?.attendees?.length || 0}/{attendanceStatus?.totalParticipants || 0}명)
+                      </div>
                     </div>
-                    <div className="text-sm text-green-600 dark:text-green-400">시간 조율 완료</div>
+
+                    {attendanceStatus?.isActive && (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-4">
+                        <div className="text-center">
+                          <div className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">
+                            출석 확인 진행 중
+                          </div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            출석 코드: <span className="font-mono font-bold">{attendanceStatus.code}</span>
+                          </div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                            남은 시간: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 출석 확인 시작/종료 버튼 */}
+                    <div className="text-center">
+                      {attendanceStatus?.isActive ? (
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleEndAttendance}
+                          disabled={isLoading}
+                          className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+                        >
+                          {isLoading ? '종료 중...' : '출석 확인 종료'}
+                        </motion.button>
+                      ) : (
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleStartAttendance}
+                          disabled={isLoading}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+                        >
+                          {isLoading ? '시작 중...' : '출석 확인 시작'}
+                        </motion.button>
+                      )}
+                    </div>
                   </div>
-                  <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">
-                      {(meeting?.participants?.length || 0) - Object.keys(meeting?.availability || {}).length}
+
+                  {/* 출석자 목록 */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                    <h4 className="font-semibold text-gray-800 dark:text-white mb-4">출석자 목록</h4>
+                    <div className="space-y-3">
+                      {attendanceStatus?.attendees?.length > 0 ? (
+                        attendanceStatus.attendees.map((attendee, index) => {
+                          const participant = meeting?.participants?.find(p => p.userId === attendee.userId)
+                          return (
+                            <div key={index} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                  <CheckCircle className="w-4 h-4 text-white" />
+                                </div>
+                                <div>
+                                  <div className="font-medium text-gray-800 dark:text-white">
+                                    {participant?.displayName || `사용자 ${attendee.userId}`}
+                                  </div>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    {participant?.status === 'owner' ? '모임장' : '참여자'}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">
+                                출석 완료
+                              </div>
+                            </div>
+                          )
+                        })
+                      ) : (
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                          <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                          <p>아직 출석한 사람이 없습니다</p>
+                        </div>
+                      )}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">미완료</div>
                   </div>
                 </div>
-              </div>
-
-              {/* 참여자별 상세 정보 */}
-              <div className="space-y-4">
-                <h4 className="font-medium text-gray-800 dark:text-white">참여자별 가용성</h4>
-                {participantSummary.map((participant, index) => (
-                  <div key={index} className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-kaist-blue to-kaist-lightblue rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm font-bold">
-                            {participant.userId.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-800 dark:text-white">
-                            사용자 {participant.userId}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {participant.status === 'owner' ? '모임장' : '참여자'}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-lg font-semibold text-gray-800 dark:text-white">
-                          {participant.availabilityRate}%
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {participant.slotCount}개 시간대
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div 
-                          className="bg-gradient-to-r from-kaist-blue to-kaist-lightblue h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${participant.availabilityRate}%` }}
-                        ></div>
-                      </div>
-                    </div>
+              ) : (
+                // 참여자용 출석 코드 입력 인터페이스
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                      출석 확인
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      모임장이 제공한 출석 코드를 입력하세요
+                    </p>
                   </div>
-                ))}
-              </div>
+
+                  {attendanceStatus?.isActive ? (
+                    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                      <div className="text-center mb-6">
+                        <div className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">
+                          출석 확인 진행 중
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                          남은 시간: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            출석 코드
+                          </label>
+                          <input
+                            type="text"
+                            value={attendanceCode}
+                            onChange={(e) => setAttendanceCode(e.target.value)}
+                            placeholder="6자리 출석 코드를 입력하세요"
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                            maxLength={6}
+                          />
+                        </div>
+                        
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleSubmitAttendanceCode}
+                          disabled={isLoading || !attendanceCode.trim()}
+                          className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+                        >
+                          {isLoading ? '확인 중...' : '출석 확인'}
+                        </motion.button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 text-center">
+                      <Clock className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                      <p className="text-gray-600 dark:text-gray-400">
+                        현재 출석 확인이 진행되지 않고 있습니다
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </motion.div>
           )}
 
