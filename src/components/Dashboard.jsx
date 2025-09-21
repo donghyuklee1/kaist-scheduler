@@ -60,6 +60,11 @@ const Dashboard = ({
     .sort((a, b) => new Date(a.date) - new Date(b.date))
     .slice(0, 5)
 
+  // 디버깅: 일정 데이터 확인
+  console.log('Dashboard - 전체 일정:', events.length, '개')
+  console.log('Dashboard - 다가오는 일정:', upcomingEvents.length, '개')
+  console.log('Dashboard - 현재 사용자:', currentUser?.uid)
+
   // 참여중인 모임 (승인된 모임만)
   const joinedMeetings = meetings.filter(meeting => 
     meeting.participants.some(p => 

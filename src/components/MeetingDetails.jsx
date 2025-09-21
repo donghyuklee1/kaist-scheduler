@@ -249,6 +249,27 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
     }
   }, [attendanceStatus])
 
+  // 실시간 출석 상태 업데이트를 위한 타이머
+  useEffect(() => {
+    if (attendanceStatus?.isActive && attendanceStatus?.endTime) {
+      const interval = setInterval(() => {
+        const status = getAttendanceStatus(meeting)
+        setAttendanceStatus(status)
+        
+        if (status.isActive && status.endTime) {
+          const endTime = new Date(status.endTime)
+          const now = new Date()
+          const remaining = Math.max(0, Math.floor((endTime - now) / 1000))
+          setTimeLeft(remaining)
+        } else {
+          setTimeLeft(0)
+        }
+      }, 1000) // 1초마다 업데이트
+
+      return () => clearInterval(interval)
+    }
+  }, [meeting, attendanceStatus?.isActive])
+
   const participantSummary = getParticipantSummary()
 
   // 공지사항 추가 함수

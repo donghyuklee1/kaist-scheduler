@@ -24,6 +24,7 @@ import FirebaseSetupAlert from './components/FirebaseSetupAlert'
 import { 
   subscribeToUserEvents, 
   subscribeToMeetings, 
+  subscribeToUserNotifications,
   createEvent as createEventInFirestore, 
   updateEvent as updateEventInFirestore, 
   deleteEvent as deleteEventInFirestore, 
@@ -35,7 +36,9 @@ import {
   addAnnouncement as addAnnouncementInFirestore, 
   deleteAnnouncement as deleteAnnouncementInFirestore, 
   getParticipantsCountForSlot, 
-  isMeetingOwner 
+  isMeetingOwner,
+  markNotificationAsRead,
+  markAllNotificationsAsRead
 } from './services/firestoreService'
 
 // 로딩 컴포넌트
@@ -83,6 +86,7 @@ function App() {
   const [selectedMeeting, setSelectedMeeting] = useState(null)
   const [showMeetingDetails, setShowMeetingDetails] = useState(false)
   const [showFirebaseSetupAlert, setShowFirebaseSetupAlert] = useState(false)
+  const [notifications, setNotifications] = useState([])
 
   // 사용자 로그인 상태에 따른 로그인 페이지 관리
   useEffect(() => {
@@ -116,18 +120,28 @@ function App() {
 
     // 사용자 이벤트 구독 (로그인한 사용자만)
     let unsubscribeEvents = null
+    let unsubscribeNotifications = null
     if (user) {
       unsubscribeEvents = subscribeToUserEvents(user.uid, (eventsData) => {
         setEvents(eventsData)
       })
+      
+      // 사용자 알림 구독
+      unsubscribeNotifications = subscribeToUserNotifications(user.uid, (notificationsData) => {
+        setNotifications(notificationsData)
+      })
     } else {
       setEvents([])
+      setNotifications([])
     }
 
     // 정리 함수
     return () => {
       if (unsubscribeEvents) {
         unsubscribeEvents()
+      }
+      if (unsubscribeNotifications) {
+        unsubscribeNotifications()
       }
       unsubscribeMeetings()
     }
@@ -539,8 +553,11 @@ function App() {
             onAddEvent={() => openEventModal()}
             onLogin={() => setShowLoginPage(true)}
             meetings={meetings}
+            notifications={notifications}
             onNavigateToProfile={() => setView('profile')}
             onNavigateToSettings={() => setView('settings')}
+            onMarkNotificationAsRead={markNotificationAsRead}
+            onMarkAllNotificationsAsRead={() => markAllNotificationsAsRead(user?.uid)}
           />
       
       <main className="container mx-auto px-4 py-8 flex-1">

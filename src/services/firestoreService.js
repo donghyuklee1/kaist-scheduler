@@ -18,7 +18,8 @@ import { db } from '../config/firebase'
 // 컬렉션 이름 상수
 export const COLLECTIONS = {
   EVENTS: 'events',
-  MEETINGS: 'meetings'
+  MEETINGS: 'meetings',
+  NOTIFICATIONS: 'notifications'
 }
 
 // ==================== 이벤트 관련 함수 ====================
@@ -417,6 +418,11 @@ export const addAnnouncement = async (meetingId, announcementData, userId) => {
       announcements: updatedAnnouncements,
       updatedAt: serverTimestamp()
     })
+    
+    // 중요 공지사항인 경우 모임원들에게 알림 생성
+    if (newAnnouncement.priority === 'high' || newAnnouncement.priority === 'urgent') {
+      await createAnnouncementNotifications(meetingId, newAnnouncement, meetingData.participants)
+    }
     
     console.log('공지사항 추가 성공:', newAnnouncement)
   } catch (error) {
@@ -887,6 +893,149 @@ export const getOptimalMeetingTimes = (meeting) => {
   return optimalTimes
     .sort((a, b) => b.availabilityRate - a.availabilityRate)
     .slice(0, 10)
+}
+
+// ==================== 알림 관련 함수 ====================
+
+// 공지사항 알림 생성
+export const createAnnouncementNotifications = async (meetingId, announcement, participants) => {
+  try {
+    if (!db) {
+      throw new Error('Firestore 데이터베이스가 초기화되지 않았습니다.')
+    }
+
+    const notifications = []
+    
+    // 승인된 참여자들에게만 알림 전송
+    const approvedParticipants = participants.filter(p => 
+      p.status === 'approved' || p.status === 'owner'
+    )
+
+    for (const participant of approvedParticipants) {
+      const notification = {
+        userId: participant.userId,
+        type: 'announcement',
+        title: `새로운 중요 공지사항`,
+        message: `${announcement.title}`,
+        data: {
+          meetingId: meetingId,
+          announcementId: announcement.id,
+          priority: announcement.priority
+        },
+        isRead: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }
+      
+      notifications.push(notification)
+    }
+
+    // 배치로 알림 생성
+    const batch = notifications.map(notification => 
+      addDoc(collection(db, COLLECTIONS.NOTIFICATIONS), notification)
+    )
+    
+    await Promise.all(batch)
+    console.log('공지사항 알림 생성 완료:', notifications.length, '개')
+  } catch (error) {
+    console.error('공지사항 알림 생성 실패:', error)
+    throw error
+  }
+}
+
+// 사용자 알림 구독
+export const subscribeToUserNotifications = (userId, callback) => {
+  try {
+    if (!userId) {
+      console.log('사용자 ID가 없어서 알림 구독을 중단합니다.')
+      callback([])
+      return () => {}
+    }
+
+    if (!db) {
+      console.error('❌ Firestore 데이터베이스가 초기화되지 않았습니다.')
+      callback([])
+      return () => {}
+    }
+
+    console.log('사용자 알림 구독 시작:', userId)
+
+    const q = query(
+      collection(db, COLLECTIONS.NOTIFICATIONS),
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc')
+    )
+
+    return onSnapshot(q, (snapshot) => {
+      console.log('사용자 알림 데이터 변경 감지:', snapshot.docs.length, '개 알림')
+      const notifications = snapshot.docs.map(doc => {
+        const data = doc.data()
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
+          updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt)
+        }
+      })
+      callback(notifications)
+    }, (error) => {
+      console.error('사용자 알림 구독 오류:', error)
+      callback([])
+    })
+  } catch (error) {
+    console.error('사용자 알림 구독 초기화 오류:', error)
+    callback([])
+    return () => {}
+  }
+}
+
+// 알림 읽음 처리
+export const markNotificationAsRead = async (notificationId) => {
+  try {
+    if (!db) {
+      throw new Error('Firestore 데이터베이스가 초기화되지 않았습니다.')
+    }
+
+    const notificationRef = doc(db, COLLECTIONS.NOTIFICATIONS, notificationId)
+    await updateDoc(notificationRef, {
+      isRead: true,
+      updatedAt: serverTimestamp()
+    })
+
+    console.log('알림 읽음 처리 완료:', notificationId)
+  } catch (error) {
+    console.error('알림 읽음 처리 실패:', error)
+    throw error
+  }
+}
+
+// 모든 알림 읽음 처리
+export const markAllNotificationsAsRead = async (userId) => {
+  try {
+    if (!db) {
+      throw new Error('Firestore 데이터베이스가 초기화되지 않았습니다.')
+    }
+
+    const q = query(
+      collection(db, COLLECTIONS.NOTIFICATIONS),
+      where('userId', '==', userId),
+      where('isRead', '==', false)
+    )
+
+    const snapshot = await getDocs(q)
+    const batch = snapshot.docs.map(doc => 
+      updateDoc(doc.ref, {
+        isRead: true,
+        updatedAt: serverTimestamp()
+      })
+    )
+
+    await Promise.all(batch)
+    console.log('모든 알림 읽음 처리 완료:', snapshot.docs.length, '개')
+  } catch (error) {
+    console.error('모든 알림 읽음 처리 실패:', error)
+    throw error
+  }
 }
 
 // 사용자 가용성 업데이트

@@ -35,16 +35,17 @@ const EventModal = ({ event, onSave, onDelete, onClose }) => {
         priority: event.priority || 'medium'
       })
     } else {
-      // Reset form for new event
+      // Reset form for new event (간편화된 기본값)
+      const today = new Date()
       setFormData({
         title: '',
         description: '',
-        date: '',
+        date: today.toISOString().split('T')[0], // 오늘 날짜로 기본 설정
         time: '',
         location: '',
         buildingId: '',
         participants: '',
-        category: 'meeting',
+        category: 'personal', // 개인 일정으로 기본 설정
         priority: 'medium'
       })
     }
@@ -53,15 +54,16 @@ const EventModal = ({ event, onSave, onDelete, onClose }) => {
   const handleSubmit = (e) => {
     e.preventDefault()
     
-    // 필수 필드 검증
+    // 필수 필드 검증 (간편화)
     if (!formData.title.trim()) {
       alert('제목을 입력해주세요.')
       return
     }
     
+    // 날짜가 없으면 오늘 날짜로 설정
     if (!formData.date) {
-      alert('날짜를 선택해주세요.')
-      return
+      const today = new Date()
+      formData.date = today.toISOString().split('T')[0]
     }
     
     // 시간은 선택사항으로 변경
