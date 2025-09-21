@@ -159,9 +159,9 @@ const Header = ({ view, setView, onAddEvent, onLogin, meetings = [], onNavigateT
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onAddEvent}
-                className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg active:scale-95 px-3 md:px-4 py-2 md:py-3 min-h-[44px] min-w-[44px] touch-action:manipulation"
+                className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-lg md:rounded-xl font-medium transition-all duration-300 hover:shadow-lg active:scale-95 p-2 md:px-4 md:py-3 touch-action:manipulation"
               >
-                <Plus className="w-4 h-4 md:w-5 md:h-5" />
+                <Plus className="w-5 h-5 md:w-5 md:h-5" />
                 <span className="hidden md:inline ml-2">일정 추가</span>
               </motion.button>
 
