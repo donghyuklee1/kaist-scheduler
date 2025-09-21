@@ -95,12 +95,6 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
     content: '',
     priority: 'normal'
   })
-  const [isLoading, setIsLoading] = useState(false)
-  
-  // 출석 관리 관련 상태
-  const [attendanceCode, setAttendanceCode] = useState('')
-  const [timeLeft, setTimeLeft] = useState(0)
-  const [attendanceStatus, setAttendanceStatus] = useState(null)
 
   // 시간 슬롯 생성 (9시부터 23시까지, 30분 단위)
   const generateTimeSlots = () => {
