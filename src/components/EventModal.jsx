@@ -514,10 +514,10 @@ const EventModal = ({ event, onSave, onDelete, onClose }) => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleDelete}
-                    className="flex items-center space-x-2 px-4 py-2 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition-colors"
+                    className="flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-2 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
-                    <span>삭제</span>
+                    <span className="hidden md:inline">삭제</span>
                   </motion.button>
                 )}
               </div>
@@ -528,19 +528,20 @@ const EventModal = ({ event, onSave, onDelete, onClose }) => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={onClose}
-                  className="btn-secondary"
+                  className="btn-secondary px-3 md:px-4 py-2"
                 >
-                  취소
+                  <span className="hidden md:inline">취소</span>
+                  <span className="md:hidden">✕</span>
                 </motion.button>
                 
                 <motion.button
                   type="submit"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="btn-primary flex items-center space-x-2"
+                  className="btn-primary flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-2"
                 >
                   <Save className="w-4 h-4" />
-                  <span>{event ? '수정' : '저장'}</span>
+                  <span className="hidden md:inline">{event ? '수정' : '저장'}</span>
                 </motion.button>
               </div>
             </div>

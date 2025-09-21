@@ -460,24 +460,25 @@ const MeetingModal = ({ meeting, onSave, onClose, currentUser }) => {
             </div>
 
             {/* 액션 버튼 */}
-            <div className="flex justify-end space-x-4 mt-8">
+            <div className="flex justify-end space-x-3 md:space-x-4 mt-8">
               <motion.button
                 type="button"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onClose}
-                className="btn-secondary"
+                className="btn-secondary px-3 md:px-4 py-2"
               >
-                취소
+                <span className="hidden md:inline">취소</span>
+                <span className="md:hidden">✕</span>
               </motion.button>
               <motion.button
                 type="submit"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="btn-primary flex items-center space-x-2"
+                className="btn-primary flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-2"
               >
-                <Save className="w-5 h-5" />
-                <span>{meeting ? '수정' : '모임 만들기'}</span>
+                <Save className="w-4 h-4 md:w-5 md:h-5" />
+                <span className="hidden md:inline">{meeting ? '수정' : '모임 만들기'}</span>
               </motion.button>
             </div>
           </form>

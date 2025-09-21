@@ -183,14 +183,14 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedCategory(category.key)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
+                className={`px-2 md:px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
                   selectedCategory === category.key
                     ? 'bg-kaist-blue text-white shadow-md'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
-                <span className="mr-1">{category.icon}</span>
-                {category.label}
+                <span className="mr-0 md:mr-1">{category.icon}</span>
+                <span className="hidden md:inline">{category.label}</span>
               </motion.button>
             ))}
           </div>

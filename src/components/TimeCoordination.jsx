@@ -223,10 +223,10 @@ const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onComplete}
-              className="btn-primary flex items-center space-x-2"
+              className="btn-primary flex items-center space-x-1 md:space-x-2"
             >
               <CheckCircle className="w-4 h-4" />
-              <span>완료</span>
+              <span className="hidden md:inline">완료</span>
             </motion.button>
           </div>
         </div>
@@ -242,24 +242,24 @@ const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, 
         >
           {/* Mode Toggle */}
           <div className="mb-8">
-            <div className="flex items-center justify-center space-x-8">
+            <div className="flex items-center justify-center space-x-4 md:space-x-8">
               {/* 가능한 시간 모드 */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setAvailableMode(true)}
-                className={`flex items-center space-x-3 px-6 py-4 rounded-xl border-2 transition-all duration-300 ${
+                className={`flex items-center space-x-2 md:space-x-3 px-4 md:px-6 py-3 md:py-4 rounded-xl border-2 transition-all duration-300 ${
                   availableMode
                     ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-lg'
                     : 'border-gray-300 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:border-blue-300'
                 }`}
               >
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                <div className={`w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center ${
                   availableMode ? 'bg-blue-500' : 'bg-gray-300'
                 }`}>
-                  {availableMode && <CheckCircle className="w-4 h-4 text-white" />}
+                  {availableMode && <CheckCircle className="w-3 h-3 md:w-4 md:h-4 text-white" />}
                 </div>
-                <span className="font-medium">되는 시간 체크</span>
+                <span className="font-medium hidden md:inline">되는 시간 체크</span>
               </motion.button>
 
               {/* 불가능한 시간 모드 */}
@@ -267,18 +267,18 @@ const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, 
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setAvailableMode(false)}
-                className={`flex items-center space-x-3 px-6 py-4 rounded-xl border-2 transition-all duration-300 ${
+                className={`flex items-center space-x-2 md:space-x-3 px-4 md:px-6 py-3 md:py-4 rounded-xl border-2 transition-all duration-300 ${
                   !availableMode
                     ? 'border-pink-500 bg-pink-50 text-pink-700 shadow-lg'
                     : 'border-gray-300 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:border-pink-300'
                 }`}
               >
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                <div className={`w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center ${
                   !availableMode ? 'bg-pink-500' : 'bg-gray-300'
                 }`}>
-                  {!availableMode && <XCircle className="w-4 h-4 text-white" />}
+                  {!availableMode && <XCircle className="w-3 h-3 md:w-4 md:h-4 text-white" />}
                 </div>
-                <span className="font-medium">안되는 시간 체크</span>
+                <span className="font-medium hidden md:inline">안되는 시간 체크</span>
               </motion.button>
             </div>
           </div>
