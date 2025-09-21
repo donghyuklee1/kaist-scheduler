@@ -395,6 +395,8 @@ const Dashboard = ({
                       e.preventDefault()
                       e.stopPropagation()
                       console.log('참여중인 모임 클릭:', meeting)
+                      console.log('모임 ID:', meeting.id)
+                      console.log('모임 제목:', meeting.title)
                       if (onMeetingClick) {
                         console.log('모임 클릭 핸들러 호출')
                         onMeetingClick(meeting)

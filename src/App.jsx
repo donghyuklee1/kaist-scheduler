@@ -584,7 +584,8 @@ function App() {
                   console.log('App.jsx - 모임 클릭 핸들러 호출:', meeting)
                   setSelectedMeeting(meeting)
                   setShowMeetingDetails(true)
-                  console.log('App.jsx - 상태 업데이트 완료')
+                  setView('meetings') // meetings 뷰로 변경
+                  console.log('App.jsx - 상태 업데이트 완료, 뷰 변경됨')
                 }}
                 onViewChange={setView}
                 currentUser={user}
