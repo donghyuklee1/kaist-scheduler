@@ -400,7 +400,7 @@ const MeetingModal = ({ meeting, onSave, onClose, currentUser }) => {
               {errors.maxParticipants && <p className="text-red-500 text-sm mt-1">{errors.maxParticipants}</p>}
             </div>
 
-            {/* 공개 범위 설정 */}
+            {/* 공개 범위 설정 - 업데이트됨 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 공개 범위
