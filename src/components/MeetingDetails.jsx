@@ -30,11 +30,10 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
     return userAvailability && userAvailability.length > 0
   }
 
-  // 기본 탭 설정: 시간 조율 완료 시 시간표 탭, 미완료 시 시간 조율 탭
+  // 기본 탭 설정: 항상 세부사항 탭으로 이동
   const getDefaultTab = () => {
     if (!canViewSchedule) return 'announcements'
-    if (hasCompletedTimeCoordination()) return 'schedule'
-    return 'timeCoordination'
+    return 'schedule'
   }
 
   const [activeTab, setActiveTab] = useState(getDefaultTab())
@@ -455,21 +454,6 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                 </motion.button>
               )}
 
-              {canViewSchedule && (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setActiveTab('timeCoordination')}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 ${
-                    activeTab === 'timeCoordination'
-                      ? 'bg-kaist-blue text-white shadow-lg'
-                      : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  <Clock className="w-4 h-4" />
-                  <span className="font-medium">시간 조율</span>
-                </motion.button>
-              )}
 
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -543,21 +527,6 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                     </motion.button>
                   )}
 
-                  {canViewSchedule && (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setActiveTab('timeCoordination')}
-                      className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] ${
-                        activeTab === 'timeCoordination'
-                          ? 'bg-kaist-blue text-white shadow-lg'
-                          : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-                      }`}
-                    >
-                      <Clock className="w-5 h-5" />
-                      <span className="text-xs font-medium">시간조율</span>
-                    </motion.button>
-                  )}
 
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -610,7 +579,7 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
                     전체 참여자 시간표
                   </h3>
-                  {canViewSchedule && (
+                  {(isOwner || isParticipant) && (
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -774,8 +743,8 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
             </motion.div>
           )}
 
-          {/* 시간 조율 탭 */}
-          {activeTab === 'timeCoordination' && (
+          {/* 시간 조율 탭 - 모임장과 승인받은 사람만 접근 가능 */}
+          {activeTab === 'timeCoordination' && (isOwner || isParticipant) && (
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
