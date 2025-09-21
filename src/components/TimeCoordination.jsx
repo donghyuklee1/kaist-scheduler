@@ -189,33 +189,33 @@ const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
-      <div className="sticky top-0 z-40 glass-effect border-b border-white/20 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+      <div className="sticky top-0 z-40 glass-effect border-b border-white/20 p-3 md:p-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
+          <div className="flex items-center space-x-3 md:space-x-4">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onBack}
               className="p-2 rounded-xl bg-white dark:bg-gray-700 shadow-md hover:shadow-lg transition-all duration-300"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-300" />
             </motion.button>
             
-            <div>
-              <h1 className="text-2xl font-bold text-kaist-blue dark:text-white">
+            <div className="flex-1">
+              <h1 className="text-lg md:text-2xl font-bold text-kaist-blue dark:text-white">
                 시간 조율
               </h1>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 truncate">
                 {meeting?.title} - 가능한 시간을 선택해주세요
               </p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Users className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-              <span className="text-sm text-gray-600 dark:text-gray-300">
-                {meeting?.participants?.length || 0}명 참여
+          <div className="flex items-center justify-between md:justify-end space-x-3 md:space-x-4">
+            <div className="flex items-center space-x-1 md:space-x-2">
+              <Users className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-300" />
+              <span className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
+                {meeting?.participants?.length || 0}명
               </span>
             </div>
             
@@ -223,7 +223,7 @@ const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onComplete}
-              className="btn-primary flex items-center space-x-1 md:space-x-2"
+              className="btn-primary flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-2 md:py-3"
             >
               <CheckCircle className="w-4 h-4" />
               <span className="hidden md:inline">완료</span>
@@ -238,7 +238,7 @@ const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="glass-effect rounded-2xl p-6 shadow-xl"
+          className="glass-effect rounded-2xl p-4 md:p-6 shadow-xl"
         >
           {/* Mode Toggle */}
           <div className="mb-8">
@@ -285,47 +285,52 @@ const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, 
 
           {/* Time Grid */}
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-            {/* Header */}
-            <div className="grid grid-cols-6 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-              <div className="p-4 text-center font-medium text-gray-500 dark:text-gray-400">
-                시간
-              </div>
-              {weekDays.map((day, index) => (
-                <div key={day} className="p-4 text-center border-l border-gray-200 dark:border-gray-600">
-                  <div className="font-medium text-gray-800 dark:text-gray-200">{day}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">{weekDates[index]}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Time Slots */}
-            <div 
-              className="max-h-96 overflow-y-auto"
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-            >
-              {timeSlots.map((slot) => (
-                <div key={slot.id} className="grid grid-cols-6 border-b border-gray-100 dark:border-gray-700">
-                  {/* Time Label */}
-                  <div className="p-3 text-center text-sm text-gray-600 dark:text-gray-400 border-r border-gray-200 dark:border-gray-600">
-                    {slot.time}
+            {/* Mobile Horizontal Scroll Container */}
+            <div className="overflow-x-auto">
+              <div className="min-w-[600px]">
+                {/* Header */}
+                <div className="grid grid-cols-6 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                  <div className="p-3 md:p-4 text-center font-medium text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-600 min-w-[80px]">
+                    시간
                   </div>
-
-                  {/* Day Columns */}
-                  {weekDays.map((_, dayIndex) => (
-                    <motion.div
-                      key={dayIndex}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`p-3 border-r border-gray-200 dark:border-gray-600 cursor-pointer transition-all duration-200 ${getSlotColor(dayIndex, slot.id)}`}
-                      onMouseDown={(e) => handleMouseDown(e, dayIndex, slot.id)}
-                      onMouseEnter={() => handleMouseEnter(dayIndex, slot.id)}
-                    >
-                      <div className="w-full h-6 rounded border border-dashed border-gray-300 dark:border-gray-500"></div>
-                    </motion.div>
+                  {weekDays.map((day, index) => (
+                    <div key={day} className="p-3 md:p-4 text-center border-r border-gray-200 dark:border-gray-600 last:border-r-0 min-w-[100px]">
+                      <div className="font-medium text-gray-800 dark:text-gray-200 text-sm md:text-base">{day}</div>
+                      <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">{weekDates[index]}</div>
+                    </div>
                   ))}
                 </div>
-              ))}
+
+                {/* Time Slots */}
+                <div 
+                  className="max-h-96 overflow-y-auto"
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                >
+                  {timeSlots.map((slot) => (
+                    <div key={slot.id} className="grid grid-cols-6 border-b border-gray-100 dark:border-gray-700">
+                      {/* Time Label */}
+                      <div className="p-2 md:p-3 text-center text-xs md:text-sm text-gray-600 dark:text-gray-400 border-r border-gray-200 dark:border-gray-600 min-w-[80px]">
+                        {slot.time}
+                      </div>
+
+                      {/* Day Columns */}
+                      {weekDays.map((_, dayIndex) => (
+                        <motion.div
+                          key={dayIndex}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={`p-2 md:p-3 border-r border-gray-200 dark:border-gray-600 last:border-r-0 cursor-pointer transition-all duration-200 min-w-[100px] ${getSlotColor(dayIndex, slot.id)}`}
+                          onMouseDown={(e) => handleMouseDown(e, dayIndex, slot.id)}
+                          onMouseEnter={() => handleMouseEnter(dayIndex, slot.id)}
+                        >
+                          <div className="w-full h-4 md:h-6 rounded border border-dashed border-gray-300 dark:border-gray-500"></div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 

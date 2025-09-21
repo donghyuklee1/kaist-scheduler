@@ -795,13 +795,13 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+              <div className="mb-4 md:mb-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0 mb-3 md:mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-white mb-1 md:mb-2">
                       공지사항
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
                       모임 관련 중요한 공지사항을 확인하세요
                     </p>
                   </div>
@@ -811,22 +811,23 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setShowAnnouncementModal(true)}
-                      className="btn-primary flex items-center space-x-2"
+                      className="btn-primary flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-2 md:py-3"
                     >
                       <Plus className="w-4 h-4" />
-                      <span>공지 추가</span>
+                      <span className="hidden md:inline">공지 추가</span>
+                      <span className="md:hidden">추가</span>
                     </motion.button>
                   )}
                 </div>
               </div>
 
               {/* 공지사항 목록 */}
-              <div className="space-y-4">
+              <div className="space-y-3 md:space-y-4">
                 {meeting?.announcements?.length > 0 ? (
                   meeting.announcements.map((announcement) => (
                     <div
                       key={announcement.id}
-                      className={`p-4 border rounded-lg ${
+                      className={`p-3 md:p-4 border rounded-lg ${
                         announcement.priority === 'high'
                           ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
                           : announcement.priority === 'low'
@@ -834,19 +835,19 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                           : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          <Bell className={`w-4 h-4 ${
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-0 mb-2">
+                        <div className="flex items-center space-x-2 min-w-0 flex-1">
+                          <Bell className={`w-4 h-4 flex-shrink-0 ${
                             announcement.priority === 'high' ? 'text-red-500' :
                             announcement.priority === 'low' ? 'text-gray-500' : 'text-blue-500'
                           }`} />
-                          <span className={`font-medium ${
+                          <span className={`font-medium text-sm md:text-base truncate ${
                             announcement.priority === 'high' ? 'text-red-700 dark:text-red-300' :
                             announcement.priority === 'low' ? 'text-gray-700 dark:text-gray-300' : 'text-blue-700 dark:text-blue-300'
                           }`}>
                             {announcement.title}
                           </span>
-                          <span className={`text-xs px-2 py-1 rounded-full ${
+                          <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
                             announcement.priority === 'high' ? 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-800' :
                             announcement.priority === 'low' ? 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800' : 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-800'
                           }`}>
@@ -860,14 +861,14 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={() => handleDeleteAnnouncement(announcement.id)}
-                            className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                            className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 flex-shrink-0"
                           >
                             <Trash2 className="w-4 h-4" />
                           </motion.button>
                         )}
                       </div>
                       
-                      <p className={`text-sm mb-2 ${
+                      <p className={`text-xs md:text-sm mb-2 ${
                         announcement.priority === 'high' ? 'text-red-600 dark:text-red-400' :
                         announcement.priority === 'low' ? 'text-gray-600 dark:text-gray-400' : 'text-blue-600 dark:text-blue-400'
                       }`}>
@@ -893,22 +894,22 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                     </div>
                   ))
                 ) : (
-                  <div className="p-8 text-center bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 dark:text-gray-400 mb-2">아직 공지사항이 없습니다</p>
-                    <p className="text-sm text-gray-400 dark:text-gray-500">
+                  <div className="p-6 md:p-8 text-center bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <Bell className="w-8 h-8 md:w-12 md:h-12 text-gray-400 mx-auto mb-3 md:mb-4" />
+                    <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-2">아직 공지사항이 없습니다</p>
+                    <p className="text-xs md:text-sm text-gray-400 dark:text-gray-500">
                       {isOwner ? '새로운 공지사항을 추가해보세요' : '모임장이 공지사항을 추가하면 여기에 표시됩니다'}
                     </p>
                   </div>
                 )}
 
                 {/* 기본 모임 정보 */}
-                <div className="p-4 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
+                <div className="p-3 md:p-4 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
                   <div className="flex items-center space-x-2 mb-2">
                     <Settings className="w-4 h-4 text-gray-500" />
-                    <span className="font-medium text-gray-700 dark:text-gray-300">모임 정보</span>
+                    <span className="font-medium text-sm md:text-base text-gray-700 dark:text-gray-300">모임 정보</span>
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                  <div className="text-xs md:text-sm text-gray-600 dark:text-gray-400 space-y-1">
                     <div>• 모임 유형: {meeting?.type || '스터디'}</div>
                     <div>• 최대 참여자: {meeting?.maxParticipants || '제한 없음'}명</div>
                     <div>• 장소: {meeting?.location || '미정'}</div>
