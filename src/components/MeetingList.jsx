@@ -36,7 +36,7 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
   const canJoin = (meeting) => {
     if (isParticipant(meeting) || isOwner(meeting)) return false
     if (meeting.status !== 'open') return false
-    if (meeting.maxParticipants && meeting.participants?.length >= meeting.maxParticipants) return false
+    if (meeting.maxParticipants && meeting.participants?.filter(p => p.status === 'approved' || p.status === 'owner').length >= meeting.maxParticipants) return false
     
     // 공개 범위 확인
     if (meeting.visibility === 'invite') return false // 초대 전용은 참가 불가
@@ -77,10 +77,11 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
     }
   }
 
-  // 참여율 계산
+  // 참여율 계산 (승인된 참여자만)
   const getParticipationRate = (meeting) => {
     if (!meeting.maxParticipants) return 0
-    return Math.round((meeting.participants?.length || 0) / meeting.maxParticipants * 100)
+    const approvedParticipants = meeting.participants?.filter(p => p.status === 'approved' || p.status === 'owner').length || 0
+    return Math.round(approvedParticipants / meeting.maxParticipants * 100)
   }
 
   // 날짜 포맷팅
@@ -300,7 +301,7 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600 dark:text-gray-400">신청 현황</span>
                       <span className="font-medium text-gray-900 dark:text-white">
-                        {meeting.participants?.length || 0}/{meeting.maxParticipants || '∞'}명
+                        {meeting.participants?.filter(p => p.status === 'approved' || p.status === 'owner').length || 0}/{meeting.maxParticipants || '∞'}명
                       </span>
                     </div>
                     {meeting.maxParticipants && (

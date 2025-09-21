@@ -419,7 +419,7 @@ const Dashboard = ({
                             <div className="flex items-center space-x-1 md:space-x-2">
                               <span className="capitalize">{meeting.type}</span>
                               <span className="hidden md:inline">•</span>
-                              <span>{meeting.participants.length}명 참여</span>
+                              <span>{meeting.participants.filter(p => p.status === 'approved' || p.status === 'owner').length}명 참여</span>
                             </div>
                             {meeting.location && (
                               <div className="flex items-center">

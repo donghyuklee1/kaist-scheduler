@@ -531,7 +531,7 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
               <div className="flex items-center space-x-1 md:space-x-2">
                 <Users className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-300" />
                 <span className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
-                  {meeting?.participants?.length || 0}명
+                  {meeting?.participants?.filter(p => p.status === 'approved' || p.status === 'owner').length || 0}명
                 </span>
               </div>
               <div className="flex items-center space-x-1 md:space-x-2">
@@ -610,7 +610,7 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                   <div className="min-w-0 flex-1">
                     <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">참여자 수</p>
                     <p className="font-medium text-sm md:text-base text-gray-800 dark:text-white">
-                      {meeting?.participants?.length || 0}명
+                      {meeting?.participants?.filter(p => p.status === 'approved' || p.status === 'owner').length || 0}명
                       {meeting?.maxParticipants && ` / ${meeting.maxParticipants}명`}
                     </p>
                   </div>

@@ -216,7 +216,7 @@ const TimeCoordination = ({ meeting, currentUser, onAvailabilityChange, onBack, 
             <div className="flex items-center space-x-1 md:space-x-2">
               <Users className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-300" />
               <span className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
-                {meeting?.participants?.length || 0}명
+                {meeting?.participants?.filter(p => p.status === 'approved' || p.status === 'owner').length || 0}명
               </span>
             </div>
             

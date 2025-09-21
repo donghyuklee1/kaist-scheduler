@@ -850,14 +850,14 @@ export const getAttendanceStatus = (meeting) => {
     return {
       isActive: false,
       attendees: [],
-      totalParticipants: meeting?.participants?.length || 0,
+      totalParticipants: meeting?.participants?.filter(p => p.status === 'approved' || p.status === 'owner').length || 0,
       attendanceRate: 0
     }
   }
   
   const attendees = meeting.attendanceCheck.attendees || []
-  // 모임장을 제외한 참여자 수 계산
-  const participantsExcludingOwner = meeting?.participants?.filter(p => p.status !== 'owner') || []
+  // 승인된 참여자만 계산 (모임장 제외)
+  const participantsExcludingOwner = meeting?.participants?.filter(p => p.status === 'approved') || []
   const totalParticipants = participantsExcludingOwner.length
   
   return {
@@ -1334,8 +1334,8 @@ export const getAttendanceHistory = (meeting) => {
       ...record,
       // 날짜별 출석률 계산
       attendanceRate: calculateDateAttendanceRate(record, meeting.participants),
-      // 총 참여자 수 (소유자 제외)
-      totalParticipants: meeting.participants?.filter(p => p.status !== 'owner').length || 0
+      // 총 참여자 수 (승인된 참여자만, 소유자 제외)
+      totalParticipants: meeting.participants?.filter(p => p.status === 'approved').length || 0
     }))
     .sort((a, b) => new Date(b.date) - new Date(a.date)) // 최신 날짜순
 
@@ -1357,7 +1357,7 @@ export const getAttendanceRecordByDate = (meeting, date) => {
     date,
     ...record,
     attendanceRate: calculateDateAttendanceRate(record, meeting.participants),
-    totalParticipants: meeting.participants?.filter(p => p.status !== 'owner').length || 0
+    totalParticipants: meeting.participants?.filter(p => p.status === 'approved').length || 0
   }
 }
 
@@ -1367,7 +1367,7 @@ const calculateDateAttendanceRate = (record, participants) => {
     return 0
   }
 
-  const totalParticipants = participants.filter(p => p.status !== 'owner').length
+  const totalParticipants = participants.filter(p => p.status === 'approved').length
   if (totalParticipants === 0) {
     return 0
   }
