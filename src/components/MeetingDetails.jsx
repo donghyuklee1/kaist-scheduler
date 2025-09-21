@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Calendar, Clock, Users, MapPin, CheckCircle, XCircle, BarChart3, Bell, Settings, Plus, Trash2, Edit3, User, Mail } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, Users, MapPin, CheckCircle, XCircle, BarChart3, Bell, Settings, Plus, Trash2, Edit3, User, Mail, CalendarDays } from 'lucide-react'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { 
@@ -19,7 +19,11 @@ import {
   getAttendanceStatus,
   getMemberAttendanceRates,
   getOptimalMeetingTimes,
-  updateUserAvailability
+  updateUserAvailability,
+  setRecurringMeetingSchedule,
+  removeRecurringMeetingSchedule,
+  createRecurringEventsForParticipants,
+  removeRecurringEventsForParticipants
 } from '../services/firestoreService'
 import TimeCoordination from './TimeCoordination'
 
@@ -27,6 +31,18 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
   // 모바일 감지
   const [isMobile, setIsMobile] = useState(false)
   const [showMobileTimeCoordination, setShowMobileTimeCoordination] = useState(false)
+  
+  // 반복 모임 일정 설정
+  const [showScheduleModal, setShowScheduleModal] = useState(false)
+  const [scheduleData, setScheduleData] = useState({
+    frequency: 'weekly',
+    dayOfWeek: 1, // 월요일
+    startTime: '14:00',
+    endTime: '16:00',
+    startDate: '',
+    endDate: '',
+    location: ''
+  })
 
   useEffect(() => {
     const checkMobile = () => {
@@ -319,6 +335,66 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
     }
   }
 
+  // 반복 모임 일정 설정
+  const handleSetRecurringSchedule = async () => {
+    if (!isOwner) {
+      alert('모임 소유자만 일정을 설정할 수 있습니다.')
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      
+      // 반복 모임 일정 설정
+      await setRecurringMeetingSchedule(meeting.id, scheduleData)
+      
+      // 참여자들의 개인 일정에 반영
+      await createRecurringEventsForParticipants(meeting.id, {
+        ...meeting,
+        recurringSchedule: scheduleData
+      })
+      
+      alert('반복 모임 일정이 설정되었습니다!')
+      setShowScheduleModal(false)
+      
+    } catch (error) {
+      console.error('반복 모임 일정 설정 실패:', error)
+      alert('일정 설정에 실패했습니다: ' + error.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // 반복 모임 일정 제거
+  const handleRemoveRecurringSchedule = async () => {
+    if (!isOwner) {
+      alert('모임 소유자만 일정을 제거할 수 있습니다.')
+      return
+    }
+
+    if (!window.confirm('정말로 반복 모임 일정을 제거하시겠습니까? 모든 참여자의 개인 일정에서도 제거됩니다.')) {
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      
+      // 참여자들의 개인 일정에서 제거
+      await removeRecurringEventsForParticipants(meeting.id)
+      
+      // 반복 모임 일정 제거
+      await removeRecurringMeetingSchedule(meeting.id)
+      
+      alert('반복 모임 일정이 제거되었습니다!')
+      
+    } catch (error) {
+      console.error('반복 모임 일정 제거 실패:', error)
+      alert('일정 제거에 실패했습니다: ' + error.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   // 참가 신청 보내기
   const handleSendJoinRequest = async () => {
     if (!currentUser) {
@@ -605,6 +681,22 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
               )}
 
 
+              {isOwner && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setActiveTab('scheduleSettings')}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 ${
+                    activeTab === 'scheduleSettings'
+                      ? 'bg-kaist-blue text-white shadow-lg'
+                      : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <CalendarDays className="w-4 h-4" />
+                  <span className="font-medium">일정 설정</span>
+                </motion.button>
+              )}
+
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -677,6 +769,22 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                     </motion.button>
                   )}
 
+
+                  {isOwner && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setActiveTab('scheduleSettings')}
+                      className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-xl transition-all duration-300 min-w-[60px] ${
+                        activeTab === 'scheduleSettings'
+                          ? 'bg-kaist-blue text-white shadow-lg'
+                          : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      <CalendarDays className="w-5 h-5" />
+                      <span className="text-xs font-medium">일정설정</span>
+                    </motion.button>
+                  )}
 
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -1093,6 +1201,154 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                 onComplete={() => setActiveTab('schedule')}
                 onAvailabilityChange={handleAvailabilityChange}
               />
+            </motion.div>
+          )}
+
+          {activeTab === 'scheduleSettings' && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-4 md:mb-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0 mb-3 md:mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-white mb-1 md:mb-2">
+                      반복 모임 일정 설정
+                    </h3>
+                    <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                      정기적인 모임 일정을 설정하여 모든 참여자의 개인 일정에 자동으로 반영됩니다
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 현재 반복 일정 상태 */}
+              <div className="mb-6">
+                {meeting?.recurringSchedule ? (
+                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl p-4 md:p-6">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <div className="w-8 h-8 bg-green-100 dark:bg-green-800 rounded-lg flex items-center justify-center">
+                        <CalendarDays className="w-4 h-4 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-green-800 dark:text-green-200">반복 일정이 설정되어 있습니다</h4>
+                        <p className="text-sm text-green-600 dark:text-green-400">모든 참여자의 개인 일정에 자동으로 반영됩니다</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Clock className="w-4 h-4 text-green-600 dark:text-green-400" />
+                          <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                            {meeting.recurringSchedule.frequency === 'weekly' ? '매주' : '격주'} 
+                            {['일', '월', '화', '수', '목', '금', '토'][meeting.recurringSchedule.dayOfWeek]}요일
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Calendar className="w-4 h-4 text-green-600 dark:text-green-400" />
+                          <span className="text-sm text-green-700 dark:text-green-300">
+                            {meeting.recurringSchedule.startTime} - {meeting.recurringSchedule.endTime}
+                          </span>
+                        </div>
+                        {meeting.recurringSchedule.location && (
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="w-4 h-4 text-green-600 dark:text-green-400" />
+                            <span className="text-sm text-green-700 dark:text-green-300">
+                              {meeting.recurringSchedule.location}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t border-green-200 dark:border-green-700">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleRemoveRecurringSchedule}
+                        disabled={isLoading}
+                        className="px-4 py-2 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50"
+                      >
+                        {isLoading ? '제거 중...' : '반복 일정 제거'}
+                      </motion.button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-4 md:p-6">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <div className="w-8 h-8 bg-gray-100 dark:bg-gray-600 rounded-lg flex items-center justify-center">
+                        <CalendarDays className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-800 dark:text-gray-200">반복 일정이 설정되지 않았습니다</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">정기적인 모임 일정을 설정해보세요</p>
+                      </div>
+                    </div>
+                    
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setShowScheduleModal(true)}
+                      className="btn-primary flex items-center space-x-2 px-4 py-2"
+                    >
+                      <CalendarDays className="w-4 h-4" />
+                      <span>반복 일정 설정하기</span>
+                    </motion.button>
+                  </div>
+                )}
+              </div>
+
+              {/* 최적의 모임 시간 제안 */}
+              <div className="mb-6">
+                <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">
+                  💡 최적의 모임 시간 제안
+                </h4>
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4">
+                  <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
+                    참여자들의 가용 시간을 분석하여 최적의 모임 시간을 제안합니다.
+                  </p>
+                  {(() => {
+                    const optimalTimes = getOptimalMeetingTimes(meeting)
+                    return optimalTimes.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {optimalTimes.slice(0, 6).map((timeSlot, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-600"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-medium text-gray-800 dark:text-white">
+                                  {timeSlot.day} {timeSlot.time}
+                                </div>
+                                <div className="text-sm text-gray-600 dark:text-gray-400">
+                                  {timeSlot.availableCount}/{timeSlot.totalParticipants}명 가능
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                                  {timeSlot.availabilityRate}%
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                        <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                        <p>가용 시간 데이터가 부족합니다</p>
+                        <p className="text-sm">참여자들이 시간 조율을 완료하면 제안이 표시됩니다</p>
+                      </div>
+                    )
+                  })()}
+                </div>
+              </div>
             </motion.div>
           )}
 
@@ -1543,6 +1799,201 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                 onAvailabilityChange={handleAvailabilityChange}
                 isMobileModal={true}
               />
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* 반복 모임 일정 설정 모달 */}
+      {showScheduleModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowScheduleModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, y: 50 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-kaist-blue rounded-xl flex items-center justify-center">
+                  <CalendarDays className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">반복 모임 일정 설정</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">정기적인 모임 일정을 설정하세요</p>
+                </div>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setShowScheduleModal(false)}
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <XCircle className="w-5 h-5 text-gray-500" />
+              </motion.button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* 반복 주기 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  반복 주기
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setScheduleData({ ...scheduleData, frequency: 'weekly' })}
+                    className={`p-3 rounded-xl border transition-all ${
+                      scheduleData.frequency === 'weekly'
+                        ? 'border-kaist-blue bg-blue-50 dark:bg-blue-900/20 text-kaist-blue'
+                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="font-medium">매주</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">일주일마다</div>
+                    </div>
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setScheduleData({ ...scheduleData, frequency: 'biweekly' })}
+                    className={`p-3 rounded-xl border transition-all ${
+                      scheduleData.frequency === 'biweekly'
+                        ? 'border-kaist-blue bg-blue-50 dark:bg-blue-900/20 text-kaist-blue'
+                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="font-medium">격주</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">2주마다</div>
+                    </div>
+                  </motion.button>
+                </div>
+              </div>
+
+              {/* 요일 선택 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  요일
+                </label>
+                <div className="grid grid-cols-7 gap-2">
+                  {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
+                    <motion.button
+                      key={day}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setScheduleData({ ...scheduleData, dayOfWeek: index })}
+                      className={`p-2 rounded-lg text-sm font-medium transition-all ${
+                        scheduleData.dayOfWeek === index
+                          ? 'bg-kaist-blue text-white'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      {day}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 시간 설정 */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    시작 시간
+                  </label>
+                  <input
+                    type="time"
+                    value={scheduleData.startTime}
+                    onChange={(e) => setScheduleData({ ...scheduleData, startTime: e.target.value })}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-kaist-blue focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    종료 시간
+                  </label>
+                  <input
+                    type="time"
+                    value={scheduleData.endTime}
+                    onChange={(e) => setScheduleData({ ...scheduleData, endTime: e.target.value })}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-kaist-blue focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* 날짜 범위 */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    시작 날짜
+                  </label>
+                  <input
+                    type="date"
+                    value={scheduleData.startDate}
+                    onChange={(e) => setScheduleData({ ...scheduleData, startDate: e.target.value })}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-kaist-blue focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    종료 날짜 (한 학기)
+                  </label>
+                  <input
+                    type="date"
+                    value={scheduleData.endDate}
+                    onChange={(e) => setScheduleData({ ...scheduleData, endDate: e.target.value })}
+                    className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-kaist-blue focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* 장소 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  장소 (선택사항)
+                </label>
+                <input
+                  type="text"
+                  value={scheduleData.location}
+                  onChange={(e) => setScheduleData({ ...scheduleData, location: e.target.value })}
+                  placeholder="예: 김병호·김상열 융합 빌딩 101호"
+                  className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-kaist-blue focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowScheduleModal(false)}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+              >
+                취소
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleSetRecurringSchedule}
+                disabled={isLoading || !scheduleData.startDate || !scheduleData.endDate}
+                className="btn-primary flex items-center space-x-2 px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <CalendarDays className="w-4 h-4" />
+                <span>{isLoading ? '설정 중...' : '일정 설정'}</span>
+              </motion.button>
             </div>
           </motion.div>
         </motion.div>

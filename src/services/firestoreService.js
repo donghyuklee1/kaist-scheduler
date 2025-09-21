@@ -5,13 +5,15 @@ import {
   deleteDoc, 
   doc, 
   getDoc,
+  getDocs,
   onSnapshot, 
   query, 
   orderBy, 
   where,
   serverTimestamp,
   arrayUnion,
-  arrayRemove
+  arrayRemove,
+  writeBatch
 } from 'firebase/firestore'
 import { db } from '../config/firebase'
 
@@ -1068,6 +1070,156 @@ export const updateUserAvailability = async (meetingId, userId, availability) =>
     console.log('가용성 업데이트 성공:', userId, availability.length, '개 슬롯')
   } catch (error) {
     console.error('가용성 업데이트 실패:', error)
+    throw error
+  }
+}
+
+// 반복 모임 일정 설정
+export const setRecurringMeetingSchedule = async (meetingId, scheduleData) => {
+  if (!db) {
+    throw new Error('Firebase가 초기화되지 않았습니다.')
+  }
+
+  try {
+    const meetingRef = doc(db, 'meetings', meetingId)
+    
+    await updateDoc(meetingRef, {
+      recurringSchedule: {
+        isRecurring: true,
+        frequency: scheduleData.frequency, // 'weekly' or 'biweekly'
+        dayOfWeek: scheduleData.dayOfWeek, // 0-6 (일-토)
+        startTime: scheduleData.startTime, // HH:mm format
+        endTime: scheduleData.endTime, // HH:mm format
+        startDate: scheduleData.startDate, // 시작 날짜
+        endDate: scheduleData.endDate, // 종료 날짜 (한 학기)
+        location: scheduleData.location || '',
+        createdAt: serverTimestamp()
+      },
+      updatedAt: serverTimestamp()
+    })
+
+    console.log('반복 모임 일정 설정 성공:', scheduleData)
+  } catch (error) {
+    console.error('반복 모임 일정 설정 실패:', error)
+    throw error
+  }
+}
+
+// 반복 모임 일정 제거
+export const removeRecurringMeetingSchedule = async (meetingId) => {
+  if (!db) {
+    throw new Error('Firebase가 초기화되지 않았습니다.')
+  }
+
+  try {
+    const meetingRef = doc(db, 'meetings', meetingId)
+    
+    await updateDoc(meetingRef, {
+      recurringSchedule: null,
+      updatedAt: serverTimestamp()
+    })
+
+    console.log('반복 모임 일정 제거 성공')
+  } catch (error) {
+    console.error('반복 모임 일정 제거 실패:', error)
+    throw error
+  }
+}
+
+// 반복 모임 일정을 개인 일정으로 생성
+export const createRecurringEventsForParticipants = async (meetingId, meetingData) => {
+  if (!db || !meetingData?.recurringSchedule) {
+    return
+  }
+
+  try {
+    const schedule = meetingData.recurringSchedule
+    const participants = meetingData.participants?.filter(p => p.status === 'approved' || p.status === 'owner') || []
+    
+    if (participants.length === 0) {
+      return
+    }
+
+    const startDate = new Date(schedule.startDate)
+    const endDate = new Date(schedule.endDate)
+    const events = []
+
+    // 반복 일정 생성
+    let currentDate = new Date(startDate)
+    while (currentDate <= endDate) {
+      const dayOfWeek = currentDate.getDay()
+      
+      // 요일이 맞는지 확인
+      if (dayOfWeek === schedule.dayOfWeek) {
+        const eventDate = currentDate.toISOString().split('T')[0]
+        
+        // 각 참여자에 대해 일정 생성
+        for (const participant of participants) {
+          const eventData = {
+            userId: participant.userId,
+            title: `${meetingData.title} 모임`,
+            description: `정기 모임 - ${meetingData.title}`,
+            date: eventDate,
+            time: schedule.startTime,
+            endTime: schedule.endTime,
+            location: schedule.location,
+            category: 'meeting',
+            meetingId: meetingId,
+            isRecurring: true,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          }
+          
+          events.push(eventData)
+        }
+      }
+      
+      // 다음 주로 이동 (격주인 경우 2주)
+      const daysToAdd = schedule.frequency === 'biweekly' ? 14 : 7
+      currentDate.setDate(currentDate.getDate() + daysToAdd)
+    }
+
+    // 모든 일정을 Firestore에 추가
+    const batch = writeBatch(db)
+    events.forEach(event => {
+      const eventRef = doc(collection(db, 'events'))
+      batch.set(eventRef, event)
+    })
+    
+    await batch.commit()
+    console.log('반복 모임 일정 생성 완료:', events.length, '개 일정')
+    
+  } catch (error) {
+    console.error('반복 모임 일정 생성 실패:', error)
+    throw error
+  }
+}
+
+// 반복 모임 일정을 개인 일정에서 제거
+export const removeRecurringEventsForParticipants = async (meetingId) => {
+  if (!db) {
+    return
+  }
+
+  try {
+    const eventsQuery = query(
+      collection(db, 'events'),
+      where('meetingId', '==', meetingId),
+      where('isRecurring', '==', true)
+    )
+    
+    const eventsSnapshot = await getDocs(eventsQuery)
+    const batch = writeBatch(db)
+    
+    eventsSnapshot.forEach(doc => {
+      batch.delete(doc.ref)
+    })
+    
+    await batch.commit()
+    console.log('반복 모임 일정 제거 완료:', eventsSnapshot.size, '개 일정')
+    
+  } catch (error) {
+    console.error('반복 모임 일정 제거 실패:', error)
     throw error
   }
 }
