@@ -41,7 +41,31 @@ import {
 // 로딩 컴포넌트
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center h-64">
-    <div className="w-8 h-8 border-4 border-kaist-blue border-t-transparent rounded-full animate-spin"></div>
+    <div className="text-center">
+      <div className="w-12 h-12 mx-auto relative mb-4">
+        {/* 외부 링 */}
+        <motion.div
+          className="w-full h-full border-4 border-blue-200 dark:border-blue-800 border-t-blue-500 dark:border-t-blue-400 rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{
+            duration: 1,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+        {/* 내부 링 */}
+        <motion.div
+          className="absolute inset-2 border-2 border-purple-200 dark:border-purple-800 border-t-purple-500 dark:border-t-purple-400 rounded-full"
+          animate={{ rotate: -360 }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+      </div>
+      <p className="text-gray-600 dark:text-gray-300 text-sm">로딩 중...</p>
+    </div>
   </div>
 )
 
@@ -346,17 +370,137 @@ function App() {
   // 로딩 중일 때 표시할 컴포넌트
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center relative overflow-hidden">
+        {/* 배경 파티클 효과 */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-2 h-2 bg-blue-200 dark:bg-blue-800 rounded-full opacity-30"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                y: [0, -20, 0],
+                opacity: [0.3, 0.8, 0.3],
+              }}
+              transition={{
+                duration: 2 + Math.random() * 2,
+                repeat: Infinity,
+                delay: Math.random() * 2,
+              }}
+            />
+          ))}
+        </div>
+
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
+          className="text-center relative z-10"
         >
-          <div className="w-16 h-16 bg-kaist-blue rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl font-bold">K</span>
-          </div>
-          <div className="w-8 h-8 border-4 border-kaist-blue border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">로딩 중...</p>
+          {/* Compendium 로고 */}
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            className="relative mb-8"
+          >
+            <div className="w-24 h-24 md:w-32 md:h-32 mx-auto relative">
+              <img
+                src="/Adobe Express - file.png"
+                alt="Compendium"
+                className="w-full h-full object-contain drop-shadow-lg"
+              />
+              {/* 로고 주변 글로우 효과 */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full opacity-20 blur-xl"
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.2, 0.4, 0.2],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                }}
+              />
+            </div>
+          </motion.div>
+
+          {/* 로딩 스피너 */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="relative mb-6"
+          >
+            <div className="w-12 h-12 md:w-16 md:h-16 mx-auto relative">
+              {/* 외부 링 */}
+              <motion.div
+                className="w-full h-full border-4 border-blue-200 dark:border-blue-800 border-t-blue-500 dark:border-t-blue-400 rounded-full"
+                animate={{ rotate: 360 }}
+                transition={{
+                  duration: 1,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
+              {/* 내부 링 */}
+              <motion.div
+                className="absolute inset-2 border-2 border-purple-200 dark:border-purple-800 border-t-purple-500 dark:border-t-purple-400 rounded-full"
+                animate={{ rotate: -360 }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
+            </div>
+          </motion.div>
+
+          {/* 로딩 텍스트 */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="space-y-2"
+          >
+            <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
+              Compendium<span className="text-green-500 text-sm md:text-lg align-super">β</span>
+            </h2>
+            <motion.p
+              className="text-gray-600 dark:text-gray-300 text-sm md:text-base"
+              animate={{
+                opacity: [0.5, 1, 0.5],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+              }}
+            >
+              로딩 중...
+            </motion.p>
+          </motion.div>
+
+          {/* 진행률 표시 */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            className="mt-6 w-48 mx-auto"
+          >
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1 overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+                initial={{ width: "0%" }}
+                animate={{ width: "100%" }}
+                transition={{
+                  duration: 2,
+                  ease: "easeInOut",
+                }}
+              />
+            </div>
+          </motion.div>
         </motion.div>
       </div>
     )
