@@ -64,10 +64,11 @@ const EventModal = ({ event, onSave, onDelete, onClose }) => {
       return
     }
     
-    if (!formData.time) {
-      alert('시간을 입력해주세요.')
-      return
-    }
+    // 시간은 선택사항으로 변경
+    // if (!formData.time) {
+    //   alert('시간을 입력해주세요.')
+    //   return
+    // }
     
     try {
       // 날짜와 시간을 결합하여 유효한 Date 객체 생성
@@ -75,13 +76,20 @@ const EventModal = ({ event, onSave, onDelete, onClose }) => {
       
       if (formData.date instanceof Date) {
         // 이미 Date 객체인 경우
-        const [hours, minutes] = formData.time.split(':')
         eventDate = new Date(formData.date)
-        eventDate.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+        if (formData.time) {
+          const [hours, minutes] = formData.time.split(':')
+          eventDate.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+        }
       } else {
         // 문자열인 경우
-        const dateTimeString = `${formData.date}T${formData.time}:00`
-        eventDate = new Date(dateTimeString)
+        if (formData.time) {
+          const dateTimeString = `${formData.date}T${formData.time}:00`
+          eventDate = new Date(dateTimeString)
+        } else {
+          // 시간이 없으면 날짜만으로 설정
+          eventDate = new Date(formData.date)
+        }
       }
       
       // 유효한 날짜인지 확인
