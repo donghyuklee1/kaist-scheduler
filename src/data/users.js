@@ -90,3 +90,4 @@ export const getUserMeetingCount = (userId, meetings) => {
 export const getUserCreatedMeetingCount = (userId, meetings) => {
   return meetings.filter(meeting => meeting.owner === userId).length
 }
+

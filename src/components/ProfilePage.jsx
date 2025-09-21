@@ -260,3 +260,4 @@ const ProfilePage = ({ onBack }) => {
 }
 
 export default ProfilePage
+

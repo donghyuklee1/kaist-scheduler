@@ -212,3 +212,4 @@ const SettingsPage = ({ onBack }) => {
 }
 
 export default SettingsPage
+
