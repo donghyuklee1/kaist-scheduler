@@ -40,11 +40,6 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
     
     // 공개 범위 확인
     if (meeting.visibility === 'invite') return false // 초대 전용은 참가 불가
-    if (meeting.visibility === 'kaist') {
-      // KAIST 구성원만 - 이메일 도메인 확인
-      const userEmail = currentUser?.email || ''
-      if (!userEmail.includes('@kaist.ac.kr')) return false
-    }
     
     return true
   }
@@ -289,9 +284,13 @@ const MeetingList = ({ meetings, currentUser, onMeetingClick, onCreateMeeting, o
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className={`text-sm font-medium ${
-                        canJoin(meeting) ? 'text-green-600 dark:text-green-400' : 'text-gray-500'
+                        canJoin(meeting) ? 'text-green-600 dark:text-green-400' : 
+                        isParticipant(meeting) ? 'text-blue-600 dark:text-blue-400' : 
+                        meeting.visibility === 'invite' ? 'text-gray-500' : 'text-green-600 dark:text-green-400'
                       }`}>
-                        {canJoin(meeting) ? '참가 신청 가능' : isParticipant(meeting) ? '참여중' : '참가 불가'}
+                        {canJoin(meeting) ? '참가 신청 가능' : 
+                         isParticipant(meeting) ? '참여중' : 
+                         meeting.visibility === 'invite' ? '초대 전용' : '참가 신청 가능'}
                       </span>
                     </div>
                   </div>
