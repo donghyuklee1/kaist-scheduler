@@ -440,19 +440,14 @@ function App() {
                   onBack={() => setShowMeetingDetails(false)}
                   onDeleteMeeting={deleteMeeting}
                 />
-              ) : selectedMeeting ? (
-                <TimeCoordination
-                  meeting={selectedMeeting}
-                  currentUser={user}
-                  onAvailabilityChange={handleAvailabilityChange}
-                  onBack={() => setSelectedMeeting(null)}
-                  onComplete={() => setShowMeetingDetails(true)}
-                />
               ) : (
                 <MeetingList
                   meetings={meetings}
                   currentUser={user}
-                  onMeetingClick={(meeting) => setSelectedMeeting(meeting)}
+                  onMeetingClick={(meeting) => {
+                    setSelectedMeeting(meeting)
+                    setShowMeetingDetails(true)
+                  }}
                   onCreateMeeting={() => openMeetingModal()}
                   onJoinMeeting={joinMeeting}
                 />
