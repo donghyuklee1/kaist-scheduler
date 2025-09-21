@@ -919,14 +919,21 @@ export const getMemberAttendanceRates = (meeting) => {
 
 // 최적의 모임 시간 제안
 export const getOptimalMeetingTimes = (meeting) => {
+  console.log('getOptimalMeetingTimes called with meeting:', meeting)
+  
   if (!meeting?.availability || !meeting?.participants) {
+    console.log('No availability or participants data')
     return []
   }
 
   const participants = meeting.participants.filter(p => p.status === 'approved' || p.status === 'owner')
   const totalParticipants = participants.length
   
+  console.log('Participants:', participants)
+  console.log('Total participants:', totalParticipants)
+  
   if (totalParticipants === 0) {
+    console.log('No approved participants')
     return []
   }
 
@@ -975,9 +982,12 @@ export const getOptimalMeetingTimes = (meeting) => {
   })
 
   // 가용률 높은 순으로 정렬하고 상위 10개만 반환
-  return optimalTimes
+  const result = optimalTimes
     .sort((a, b) => b.availabilityRate - a.availabilityRate)
     .slice(0, 10)
+  
+  console.log('Final optimal times result:', result)
+  return result
 }
 
 // ==================== 알림 관련 함수 ====================
