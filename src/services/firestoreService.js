@@ -707,13 +707,11 @@ export const updateMeetingStatus = async (meetingId, status, userId) => {
 
 // 출석 관리 관련 함수들
 
-// 6자리 랜덤 번호 생성 (개선된 버전)
+// 6자리 랜덤 숫자 생성
 export const generateAttendanceCode = () => {
-  // 더 읽기 쉬운 코드 생성 (0, O, I, 1 제외)
-  const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
   let result = ''
   for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
+    result += Math.floor(Math.random() * 10)
   }
   return result
 }
@@ -794,21 +792,6 @@ export const startAttendanceCheck = async (meetingId, userId, attendanceDate = n
     })
     
     console.log('Firestore 업데이트 완료 - 모임 ID:', meetingId)
-    
-    // 출석 알림 생성 (모든 참여자에게)
-    const participants = meetingData.participants?.filter(p => p.status === 'approved' || p.status === 'owner') || []
-    for (const participant of participants) {
-      if (participant.userId !== userId) { // 모임장 제외
-        await createNotification(participant.userId, {
-          type: 'attendance_started',
-          title: '출석 확인이 시작되었습니다',
-          message: `${meetingData.title} 모임의 출석 확인이 시작되었습니다. 코드: ${attendanceCode}`,
-          meetingId: meetingId,
-          attendanceCode: attendanceCode,
-          endTime: endTime.toISOString()
-        })
-      }
-    }
     
     console.log('출석 확인 시작 성공, 날짜:', targetDate, '코드:', attendanceCode)
     return { code: attendanceCode, date: targetDate, endTime: endTime.toISOString() }
@@ -934,16 +917,6 @@ export const submitAttendanceCode = async (meetingId, userId, code) => {
       // 현재 활성 출석 확인에도 추가 (하위 호환성)
       'attendanceCheck.attendees': arrayUnion(newAttendee),
       updatedAt: serverTimestamp()
-    })
-    
-    // 출석 완료 알림 생성 (모임장에게)
-    await createNotification(meetingData.owner, {
-      type: 'attendance_completed',
-      title: '새로운 출석 확인 완료',
-      message: `${meetingData.title} 모임에서 새로운 출석 확인이 완료되었습니다.`,
-      meetingId: meetingId,
-      attendeeId: userId,
-      attendanceDate: currentDate
     })
     
     console.log('출석 확인 성공:', userId, '날짜:', currentDate)

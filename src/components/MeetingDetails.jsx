@@ -192,7 +192,9 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
   const handleStartAttendance = async () => {
     try {
       setIsLoading(true)
-      const result = await startAttendanceCheck(meeting.id, currentUser.uid, selectedAttendanceDate)
+      // 당일 날짜 사용 (YYYY-MM-DD 형식)
+      const today = new Date().toISOString().split('T')[0]
+      const result = await startAttendanceCheck(meeting.id, currentUser.uid, today)
       setAttendanceCode(result.code)
       setTimeLeft(180) // 3분 = 180초
       // 알림 대신 자동으로 코드 표시 (화면 새로고침 없이)
@@ -210,7 +212,7 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
       await endAttendanceCheck(meeting.id, currentUser.uid)
       setAttendanceCode('')
       setTimeLeft(0)
-      alert('출석 확인이 종료되었습니다.')
+      console.log('출석 확인이 종료되었습니다.')
     } catch (error) {
       alert('출석 확인 종료에 실패했습니다: ' + error.message)
     } finally {
@@ -227,7 +229,7 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
     try {
       setIsLoading(true)
       await submitAttendanceCode(meeting.id, currentUser.uid, attendanceCode.trim())
-      alert('출석 확인이 완료되었습니다!')
+      console.log('출석 확인이 완료되었습니다!')
       setAttendanceCode('')
     } catch (error) {
       alert('출석 확인에 실패했습니다: ' + error.message)
@@ -1186,23 +1188,17 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       간편한 출석 확인 시스템
                     </p>
+                    {/* 당일 날짜 표시 */}
+                    <div className="mt-3 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg inline-block">
+                      <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                        {format(new Date(), 'yyyy년 M월 d일 (E)', { locale: ko })}
+                      </span>
+                    </div>
                   </div>
 
                   {/* 출석 관리 메인 */}
                   <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
                     <div className="space-y-4">
-                      {/* 날짜 선택 */}
-                      <div className="flex items-center gap-3">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          출석 날짜:
-                        </label>
-                        <input
-                          type="date"
-                          value={selectedAttendanceDate}
-                          onChange={(e) => setSelectedAttendanceDate(e.target.value)}
-                          className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
 
                       {/* 출석 상태 */}
                       {attendanceStatus?.isActive ? (
@@ -1249,16 +1245,6 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                             )}
                           </div>
                           
-                          {/* 종료 버튼 */}
-                          <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={handleEndAttendance}
-                            disabled={isLoading}
-                            className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
-                          >
-                            {isLoading ? '종료 중...' : '출석 확인 종료'}
-                          </motion.button>
                         </div>
                       ) : (
                         <motion.button
