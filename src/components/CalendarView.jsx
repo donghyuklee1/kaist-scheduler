@@ -114,19 +114,27 @@ const CalendarView = ({ events, onEventClick, onAddEvent, currentUser, selectedD
       return
     }
 
+    if (!currentUser || !currentUser.uid) {
+      alert('로그인이 필요합니다. 다시 로그인해주세요.')
+      return
+    }
+
     try {
+      console.log('CalendarView - currentUser:', currentUser)
+      console.log('CalendarView - currentUser.uid:', currentUser.uid)
       const eventData = {
         ...eventForm,
         userId: currentUser.uid,
         createdAt: new Date().toISOString()
       }
+      console.log('CalendarView - eventData:', eventData)
 
       if (editingEvent) {
         // 기존 이벤트 업데이트 (deleteEvent + createEvent로 구현)
         await deleteEvent(editingEvent.id)
-        await createEvent(eventData)
+        await createEvent(eventData, currentUser.uid)
       } else {
-        await createEvent(eventData)
+        await createEvent(eventData, currentUser.uid)
       }
 
       setShowEventModal(false)
