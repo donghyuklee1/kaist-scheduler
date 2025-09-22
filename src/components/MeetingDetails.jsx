@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Calendar, Clock, Users, MapPin, CheckCircle, XCircle, BarChart3, Bell, Settings, Plus, Trash2, Edit3, User, Mail, CalendarDays } from 'lucide-react'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
+import { usePeriodicRefresh } from '../hooks/useRealtimeUpdates'
 import { 
   addAnnouncement, 
   deleteAnnouncement, 
@@ -276,6 +277,34 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
       }
     }
   }, [meeting])
+
+  // 주기적 새로고침을 위한 함수
+  const refreshAttendanceStatus = useCallback(() => {
+    if (meeting) {
+      console.log('출석 상태 주기적 새로고침 실행:', new Date().toLocaleTimeString())
+      const status = getAttendanceStatus(meeting)
+      setAttendanceStatus(status)
+      
+      // 출석 확인이 활성화되면 자동으로 코드 표시
+      if (status.isActive && meeting.attendanceCheck) {
+        setAttendanceCode(meeting.attendanceCheck.code)
+      } else {
+        setAttendanceCode('')
+      }
+      
+      if (status.isActive && status.endTime) {
+        const endTime = new Date(status.endTime)
+        const now = new Date()
+        const remaining = Math.max(0, Math.floor((endTime - now) / 1000))
+        setTimeLeft(remaining)
+      } else if (!status.isActive) {
+        setTimeLeft(0)
+      }
+    }
+  }, [meeting])
+
+  // 주기적 새로고침 설정 (3초마다)
+  usePeriodicRefresh(refreshAttendanceStatus, 3000, [meeting?.id])
 
   // 출석 상태가 변경될 때마다 실시간 업데이트
   useEffect(() => {

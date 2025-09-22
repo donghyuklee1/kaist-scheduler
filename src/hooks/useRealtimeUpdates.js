@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { useContext } from 'react'
 import { ToastContext } from '../contexts/ToastContext'
 
@@ -138,5 +138,59 @@ export const useOptimisticUpdates = () => {
     showOptimisticSuccess,
     showOptimisticError,
     showLoadingState
+  }
+}
+
+// 주기적 새로고침을 위한 훅
+export const usePeriodicRefresh = (refreshFunction, intervalMs = 5000, dependencies = []) => {
+  const intervalRef = useRef(null)
+  const isActiveRef = useRef(true)
+
+  const startRefresh = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+    }
+    
+    intervalRef.current = setInterval(() => {
+      if (isActiveRef.current && refreshFunction) {
+        console.log('주기적 새로고침 실행:', new Date().toLocaleTimeString())
+        refreshFunction()
+      }
+    }, intervalMs)
+  }, [refreshFunction, intervalMs])
+
+  const stopRefresh = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+  }, [])
+
+  const pauseRefresh = useCallback(() => {
+    isActiveRef.current = false
+  }, [])
+
+  const resumeRefresh = useCallback(() => {
+    isActiveRef.current = true
+  }, [])
+
+  useEffect(() => {
+    startRefresh()
+    return () => {
+      stopRefresh()
+    }
+  }, [startRefresh, stopRefresh, ...dependencies])
+
+  useEffect(() => {
+    return () => {
+      stopRefresh()
+    }
+  }, [stopRefresh])
+
+  return {
+    startRefresh,
+    stopRefresh,
+    pauseRefresh,
+    resumeRefresh
   }
 }
