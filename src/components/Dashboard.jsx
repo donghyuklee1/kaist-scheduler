@@ -38,14 +38,24 @@ const Dashboard = ({
 
   // 특정 날짜의 일정 필터링 (본인 일정만)
   const getEventsForDate = (date) => {
-    return events.filter(event => {
+    console.log('Dashboard getEventsForDate 호출:', format(date, 'yyyy-MM-dd'))
+    console.log('Dashboard 현재 사용자 ID:', currentUser?.uid)
+    console.log('Dashboard 전체 이벤트:', events)
+    
+    const filteredEvents = events.filter(event => {
       // 본인의 일정만 표시
       if (event.userId !== currentUser?.uid) {
+        console.log(`Dashboard 이벤트 ${event.title}: 사용자 불일치 (${event.userId} !== ${currentUser?.uid})`)
         return false
       }
       const eventDate = new Date(event.date)
-      return eventDate.toDateString() === date.toDateString()
+      const isDateMatch = eventDate.toDateString() === date.toDateString()
+      console.log(`Dashboard 이벤트 ${event.title}: 날짜매치=${isDateMatch} (${eventDate.toDateString()} === ${date.toDateString()})`)
+      return isDateMatch
     })
+    
+    console.log('Dashboard 필터링된 이벤트:', filteredEvents)
+    return filteredEvents
   }
 
   // 다가오는 일정 (오늘부터 7일간, 본인 일정만)

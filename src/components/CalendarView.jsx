@@ -53,9 +53,19 @@ const CalendarView = ({ events, onEventClick, onAddEvent, currentUser, selectedD
   const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 })
 
   const getEventsForDate = (date) => {
-    return events.filter(event => 
-      event.userId === currentUser?.uid && isSameDay(new Date(event.date), date)
-    )
+    console.log('getEventsForDate 호출:', format(date, 'yyyy-MM-dd'))
+    console.log('현재 사용자 ID:', currentUser?.uid)
+    console.log('전체 이벤트:', events)
+    
+    const filteredEvents = events.filter(event => {
+      const isUserMatch = event.userId === currentUser?.uid
+      const isDateMatch = isSameDay(new Date(event.date), date)
+      console.log(`이벤트 ${event.title}: userId=${event.userId}, date=${event.date}, 사용자매치=${isUserMatch}, 날짜매치=${isDateMatch}`)
+      return isUserMatch && isDateMatch
+    })
+    
+    console.log('필터링된 이벤트:', filteredEvents)
+    return filteredEvents
   }
 
   const nextMonth = () => {

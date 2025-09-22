@@ -64,7 +64,9 @@ export const subscribeToUserEvents = (userId, callback) => {
       
       const events = snapshot.docs.map(doc => {
         const data = doc.data()
-        return {
+        console.log('Firestore에서 읽은 원본 데이터:', data)
+        
+        const processedEvent = {
           id: doc.id,
           ...data,
           // 날짜 객체 정규화
@@ -72,6 +74,9 @@ export const subscribeToUserEvents = (userId, callback) => {
           createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt),
           updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt)
         }
+        
+        console.log('처리된 이벤트 데이터:', processedEvent)
+        return processedEvent
       })
       
       // 날짜순 정렬 (클라이언트 사이드에서도 정렬)
