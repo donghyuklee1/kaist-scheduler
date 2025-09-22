@@ -1197,8 +1197,7 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                   </div>
 
                   {/* 출석 관리 메인 */}
-                  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                    <div className="space-y-4">
+                  <div className="space-y-4">
 
                       {/* 출석 상태 */}
                       {attendanceStatus?.isActive && (
@@ -1246,7 +1245,6 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                           </div>
                         </div>
                       )}
-                    </div>
                   </div>
 
                   {/* 출석 기록 관리 */}
