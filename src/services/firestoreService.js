@@ -755,6 +755,11 @@ export const startAttendanceCheck = async (meetingId, userId, attendanceDate = n
     const attendanceCode = generateAttendanceCode()
     const endTime = new Date(Date.now() + getAttendanceDuration(duration))
     
+    console.log('출석확인 시작 - 모임 ID:', meetingId)
+    console.log('출석확인 시작 - 사용자 ID:', userId)
+    console.log('출석확인 시작 - 코드:', attendanceCode)
+    console.log('출석확인 시작 - 종료 시간:', endTime)
+    
     // 날짜별 출석 기록 구조
     const attendanceRecord = {
       date: targetDate,
@@ -771,6 +776,9 @@ export const startAttendanceCheck = async (meetingId, userId, attendanceDate = n
     // 해당 날짜의 출석 기록 업데이트
     existingAttendanceHistory[targetDate] = attendanceRecord
     
+    console.log('Firestore 업데이트 시작 - 모임 ID:', meetingId)
+    console.log('업데이트할 출석 기록:', existingAttendanceHistory)
+    
     await updateDoc(meetingRef, {
       attendanceHistory: existingAttendanceHistory,
       // 현재 활성 출석 확인 (하위 호환성)
@@ -784,6 +792,8 @@ export const startAttendanceCheck = async (meetingId, userId, attendanceDate = n
       },
       updatedAt: serverTimestamp()
     })
+    
+    console.log('Firestore 업데이트 완료 - 모임 ID:', meetingId)
     
     // 출석 알림 생성 (모든 참여자에게)
     const participants = meetingData.participants?.filter(p => p.status === 'approved' || p.status === 'owner') || []
@@ -1254,12 +1264,17 @@ export const updateUserAvailability = async (meetingId, userId, availability) =>
     // 사용자의 가용성 업데이트
     currentAvailability[userId] = availability
 
+    console.log('일정 조율 업데이트 시작 - 모임 ID:', meetingId)
+    console.log('일정 조율 업데이트 - 사용자 ID:', userId)
+    console.log('업데이트할 가용성 데이터:', currentAvailability)
+    
     // 모임 문서 업데이트
     await updateDoc(meetingRef, {
       availability: currentAvailability,
       updatedAt: serverTimestamp()
     })
 
+    console.log('일정 조율 Firestore 업데이트 완료 - 모임 ID:', meetingId)
     console.log('가용성 업데이트 성공:', userId, availability.length, '개 슬롯')
   } catch (error) {
     console.error('가용성 업데이트 실패:', error)
