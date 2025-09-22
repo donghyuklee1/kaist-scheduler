@@ -1246,16 +1246,6 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                           </div>
                           
                         </div>
-                      ) : (
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={handleStartAttendance}
-                          disabled={isLoading}
-                          className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
-                        >
-                          {isLoading ? '시작 중...' : '출석 확인 시작'}
-                        </motion.button>
                       )}
                     </div>
                   </div>
