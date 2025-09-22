@@ -1201,7 +1201,7 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                     <div className="space-y-4">
 
                       {/* 출석 상태 */}
-                      {attendanceStatus?.isActive ? (
+                      {attendanceStatus?.isActive && (
                         <div className="space-y-4">
                           {/* 출석 코드 표시 */}
                           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
@@ -1244,7 +1244,6 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                               </div>
                             )}
                           </div>
-                          
                         </div>
                       )}
                     </div>
