@@ -219,13 +219,25 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
       
       // 즉시 attendanceStatus 업데이트 (Firestore 반영 전에 미리 업데이트)
       const endTime = new Date(result.endTime)
-      setAttendanceStatus({
+      const newStatus = {
         isActive: true,
         code: result.code,
         endTime: endTime.toISOString(),
         attendees: [],
         currentDate: today
-      })
+      }
+      setAttendanceStatus(newStatus)
+      
+      // 상태 업데이트를 확실히 하기 위해 약간의 지연 후 재확인
+      setTimeout(() => {
+        setAttendanceStatus(prevStatus => {
+          if (!prevStatus || !prevStatus.isActive) {
+            console.log('상태 복원:', newStatus)
+            return newStatus
+          }
+          return prevStatus
+        })
+      }, 100)
       
       console.log(`출석 확인 시작: ${result.code}`)
     } catch (error) {
@@ -323,15 +335,25 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
     if (meeting) {
       console.log('출석 상태 주기적 새로고침 실행:', new Date().toLocaleTimeString())
       const status = getAttendanceStatus(meeting)
-      setAttendanceStatus(status)
       
-      // 출석 확인이 활성화되면 자동으로 코드 표시
-      if (status.isActive && meeting.attendanceCheck) {
-        setAttendanceCode(meeting.attendanceCheck.code)
-      } else {
-        setAttendanceCode('')
+      // 로컬 상태와 Firestore 상태가 다를 때만 업데이트
+      const localStatusActive = attendanceStatus?.isActive
+      const firestoreStatusActive = status.isActive
+      
+      // 상태가 다르거나 로컬 상태가 없는 경우에만 업데이트
+      if (localStatusActive !== firestoreStatusActive || !attendanceStatus) {
+        console.log('상태 차이 감지, 업데이트:', { localStatusActive, firestoreStatusActive })
+        setAttendanceStatus(status)
+        
+        // 출석 확인이 활성화되면 자동으로 코드 표시
+        if (status.isActive && meeting.attendanceCheck) {
+          setAttendanceCode(meeting.attendanceCheck.code)
+        } else if (!status.isActive) {
+          setAttendanceCode('')
+        }
       }
       
+      // 타이머는 항상 업데이트 (시간 경과 반영)
       if (status.isActive && status.endTime) {
         const endTime = new Date(status.endTime)
         const now = new Date()
@@ -341,10 +363,10 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
         setTimeLeft(0)
       }
     }
-  }, [meeting])
+  }, [meeting, attendanceStatus])
 
-  // 주기적 새로고침 설정 (1초마다)
-  usePeriodicRefresh(refreshAttendanceStatus, 1000, [meeting?.id])
+  // 주기적 새로고침 설정 (3초마다)
+  usePeriodicRefresh(refreshAttendanceStatus, 3000, [meeting?.id])
 
   // 출석 상태가 변경될 때마다 실시간 업데이트
   useEffect(() => {
