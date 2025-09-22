@@ -702,13 +702,25 @@ export const updateMeetingStatus = async (meetingId, status, userId) => {
 
 // 출석 관리 관련 함수들
 
-// 6자리 랜덤 번호 생성
+// 6자리 랜덤 번호 생성 (개선된 버전)
 export const generateAttendanceCode = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString()
+  // 더 읽기 쉬운 코드 생성 (0, O, I, 1 제외)
+  const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
+  let result = ''
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return result
 }
 
-// 출석 확인 시작 (날짜별 관리)
-export const startAttendanceCheck = async (meetingId, userId, attendanceDate = null) => {
+// 출석 확인 시간 설정 (기본 3분, 최대 10분)
+export const getAttendanceDuration = (duration = 3) => {
+  const minutes = Math.min(Math.max(duration, 1), 10) // 1-10분 사이
+  return minutes * 60 * 1000 // 밀리초로 변환
+}
+
+// 출석 확인 시작 (날짜별 관리, 개선된 버전)
+export const startAttendanceCheck = async (meetingId, userId, attendanceDate = null, duration = 3) => {
   try {
     if (!db) {
       throw new Error('Firebase가 초기화되지 않았습니다')
@@ -727,11 +739,16 @@ export const startAttendanceCheck = async (meetingId, userId, attendanceDate = n
       throw new Error('모임 소유자만 출석 확인을 시작할 수 있습니다')
     }
     
+    // 이미 활성화된 출석 확인이 있는지 확인
+    if (meetingData.attendanceCheck?.isActive) {
+      throw new Error('이미 출석 확인이 진행 중입니다')
+    }
+    
     // 출석 날짜 설정 (기본값: 오늘)
     const targetDate = attendanceDate || new Date().toISOString().split('T')[0]
     
     const attendanceCode = generateAttendanceCode()
-    const endTime = new Date(Date.now() + 3 * 60 * 1000) // 3분 후
+    const endTime = new Date(Date.now() + getAttendanceDuration(duration))
     
     // 날짜별 출석 기록 구조
     const attendanceRecord = {
@@ -763,8 +780,23 @@ export const startAttendanceCheck = async (meetingId, userId, attendanceDate = n
       updatedAt: serverTimestamp()
     })
     
+    // 출석 알림 생성 (모든 참여자에게)
+    const participants = meetingData.participants?.filter(p => p.status === 'approved' || p.status === 'owner') || []
+    for (const participant of participants) {
+      if (participant.userId !== userId) { // 모임장 제외
+        await createNotification(participant.userId, {
+          type: 'attendance_started',
+          title: '출석 확인이 시작되었습니다',
+          message: `${meetingData.title} 모임의 출석 확인이 시작되었습니다. 코드: ${attendanceCode}`,
+          meetingId: meetingId,
+          attendanceCode: attendanceCode,
+          endTime: endTime.toISOString()
+        })
+      }
+    }
+    
     console.log('출석 확인 시작 성공, 날짜:', targetDate, '코드:', attendanceCode)
-    return { code: attendanceCode, date: targetDate }
+    return { code: attendanceCode, date: targetDate, endTime: endTime.toISOString() }
   } catch (error) {
     console.error('출석 확인 시작 실패:', error)
     throw error
@@ -824,7 +856,7 @@ export const endAttendanceCheck = async (meetingId, userId) => {
   }
 }
 
-// 출석 코드 입력 (날짜별 관리)
+// 출석 코드 입력 (날짜별 관리, 개선된 버전)
 export const submitAttendanceCode = async (meetingId, userId, code) => {
   try {
     if (!db) {
@@ -844,7 +876,14 @@ export const submitAttendanceCode = async (meetingId, userId, code) => {
       throw new Error('출석 확인이 진행 중이 아닙니다')
     }
     
-    if (meetingData.attendanceCheck.code !== code) {
+    // 시간 만료 확인
+    const endTime = new Date(meetingData.attendanceCheck.endTime)
+    if (new Date() > endTime) {
+      throw new Error('출석 확인 시간이 만료되었습니다')
+    }
+    
+    // 코드 검증 (대소문자 구분 없이)
+    if (meetingData.attendanceCheck.code.toUpperCase() !== code.toUpperCase()) {
       throw new Error('잘못된 출석 코드입니다')
     }
     
@@ -880,6 +919,16 @@ export const submitAttendanceCode = async (meetingId, userId, code) => {
       // 현재 활성 출석 확인에도 추가 (하위 호환성)
       'attendanceCheck.attendees': arrayUnion(newAttendee),
       updatedAt: serverTimestamp()
+    })
+    
+    // 출석 완료 알림 생성 (모임장에게)
+    await createNotification(meetingData.owner, {
+      type: 'attendance_completed',
+      title: '새로운 출석 확인 완료',
+      message: `${meetingData.title} 모임에서 새로운 출석 확인이 완료되었습니다.`,
+      meetingId: meetingId,
+      attendeeId: userId,
+      attendanceDate: currentDate
     })
     
     console.log('출석 확인 성공:', userId, '날짜:', currentDate)

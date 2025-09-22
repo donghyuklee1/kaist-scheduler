@@ -1170,36 +1170,148 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                 // 모임장용 출석 관리 인터페이스
                 <div className="space-y-6">
                   <div className="text-center">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                      출석 관리
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                      📊 출석 관리
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      모임원들의 출석을 확인하고 관리하세요
+                      간편한 QR 코드 출석 확인과 실시간 출석 현황 관리
                     </p>
                   </div>
 
-                  {/* 출석 현황 */}
-                  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                    {/* 날짜 선택 및 출석 기록 보기 */}
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-                      <div className="flex flex-col md:flex-row md:items-center gap-3">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          출석 날짜:
-                        </label>
-                        <input
-                          type="date"
-                          value={selectedAttendanceDate}
-                          onChange={(e) => setSelectedAttendanceDate(e.target.value)}
-                          className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
+                  {/* 빠른 출석 관리 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* 출석 시작/종료 */}
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl border border-blue-200 dark:border-blue-700 p-6">
+                      <h4 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-4 flex items-center">
+                        <Clock className="w-5 h-5 mr-2" />
+                        빠른 출석 관리
+                      </h4>
+                      
+                      <div className="space-y-4">
+                        <div className="flex flex-col md:flex-row md:items-center gap-3">
+                          <label className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                            출석 날짜:
+                          </label>
+                          <input
+                            type="date"
+                            value={selectedAttendanceDate}
+                            onChange={(e) => setSelectedAttendanceDate(e.target.value)}
+                            className="px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+
+                        {attendanceStatus?.isActive ? (
+                          <div className="space-y-3">
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-200 dark:border-blue-600">
+                              <div className="text-center">
+                                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+                                  {attendanceCode}
+                                </div>
+                                <div className="text-sm text-blue-600 dark:text-blue-400 mb-2">
+                                  출석 코드
+                                </div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                  남은 시간: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={handleEndAttendance}
+                              disabled={isLoading}
+                              className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+                            >
+                              {isLoading ? '종료 중...' : '출석 확인 종료'}
+                            </motion.button>
+                          </div>
+                        ) : (
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={handleStartAttendance}
+                            disabled={isLoading}
+                            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+                          >
+                            {isLoading ? '시작 중...' : '출석 확인 시작'}
+                          </motion.button>
+                        )}
                       </div>
+                    </div>
+
+                    {/* 출석 현황 요약 */}
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl border border-green-200 dark:border-green-700 p-6">
+                      <h4 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-4 flex items-center">
+                        <Users className="w-5 h-5 mr-2" />
+                        실시간 출석 현황
+                      </h4>
+                      
+                      {attendanceStatus?.isActive ? (
+                        <div className="space-y-3">
+                          <div className="text-center">
+                            <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                              {attendanceStatus.attendees?.length || 0}
+                            </div>
+                            <div className="text-sm text-green-600 dark:text-green-400">
+                              출석 완료
+                            </div>
+                          </div>
+                          
+                          <div className="text-center">
+                            <div className="text-lg font-semibold text-green-700 dark:text-green-300">
+                              {meeting.participants?.filter(p => p.status === 'approved' || p.status === 'owner').length || 0}명 중
+                            </div>
+                            <div className="text-xs text-green-600 dark:text-green-400">
+                              총 참여자
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            {attendanceStatus.attendees?.slice(0, 3).map((attendee, index) => {
+                              const participant = meeting.participants?.find(p => p.userId === attendee.userId)
+                              return (
+                                <div key={attendee.userId} className="flex items-center space-x-2 text-sm">
+                                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                    {index + 1}
+                                  </div>
+                                  <span className="text-green-700 dark:text-green-300">
+                                    {participant?.name || '알 수 없음'}
+                                  </span>
+                                </div>
+                              )
+                            })}
+                            {(attendanceStatus.attendees?.length || 0) > 3 && (
+                              <div className="text-xs text-green-600 dark:text-green-400 text-center">
+                                +{(attendanceStatus.attendees?.length || 0) - 3}명 더
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <Clock className="w-12 h-12 mx-auto mb-3 text-green-400" />
+                          <p className="text-green-600 dark:text-green-400">
+                            출석 확인이 진행되지 않고 있습니다
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 출석 기록 관리 */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h4 className="text-lg font-semibold text-gray-800 dark:text-white">
+                        📈 출석 기록 및 통계
+                      </h4>
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setShowAttendanceHistory(!showAttendanceHistory)}
                         className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
                       >
-                        {showAttendanceHistory ? '현재 출석 숨기기' : '출석 기록 보기'}
+                        {showAttendanceHistory ? '숨기기' : '상세 보기'}
                       </motion.button>
                     </div>
 
@@ -1442,41 +1554,49 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                   </div>
                 </div>
               ) : (
-                // 참여자용 출석 코드 입력 인터페이스
+                // 참여자용 출석 확인 인터페이스
                 <div className="space-y-6">
                   <div className="text-center">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                      출석 확인
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                      ✅ 출석 확인
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      모임장이 제공한 출석 코드를 입력하세요
+                      간편하고 빠른 출석 확인 시스템
                     </p>
                   </div>
 
                   {attendanceStatus?.isActive ? (
-                    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl border border-blue-200 dark:border-blue-700 p-6">
                       <div className="text-center mb-6">
+                        <div className="flex items-center justify-center mb-3">
+                          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+                            <Clock className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
                         <div className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">
                           출석 확인 진행 중
                         </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        <div className="text-sm text-blue-600 dark:text-blue-400 mb-4">
                           남은 시간: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
                         </div>
                       </div>
 
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            출석 코드
+                          <label className="block text-sm font-medium text-blue-700 dark:text-blue-300 mb-2">
+                            📱 출석 코드 입력
                           </label>
                           <input
                             type="text"
                             value={attendanceCode}
                             onChange={(e) => setAttendanceCode(e.target.value)}
                             placeholder="6자리 출석 코드를 입력하세요"
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                            className="w-full px-4 py-3 border border-blue-300 dark:border-blue-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-center text-lg font-mono"
                             maxLength={6}
                           />
+                          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 text-center">
+                            모임장이 제공한 코드를 정확히 입력해주세요
+                          </p>
                         </div>
                         
                         <motion.button
@@ -1484,20 +1604,102 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                           whileTap={{ scale: 0.95 }}
                           onClick={handleSubmitAttendanceCode}
                           disabled={isLoading || !attendanceCode.trim()}
-                          className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+                          className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
                         >
-                          {isLoading ? '확인 중...' : '출석 확인'}
+                          {isLoading ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              <span>확인 중...</span>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-4 h-4" />
+                              <span>출석 확인</span>
+                            </>
+                          )}
                         </motion.button>
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 text-center">
-                      <Clock className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                      <p className="text-gray-600 dark:text-gray-400">
-                        현재 출석 확인이 진행되지 않고 있습니다
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 p-8 text-center">
+                      <div className="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Clock className="w-8 h-8 text-white" />
+                      </div>
+                      <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        출석 확인 대기 중
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        모임장이 출석 확인을 시작하면 알림을 받을 수 있습니다
                       </p>
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+                        <p className="text-xs text-blue-600 dark:text-blue-400">
+                          💡 팁: 출석 확인이 시작되면 빠르게 코드를 입력하세요!
+                        </p>
+                      </div>
                     </div>
                   )}
+
+                  {/* 개인 출석 기록 */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                    <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                      <Users className="w-5 h-5 mr-2" />
+                      내 출석 기록
+                    </h4>
+                    
+                    {(() => {
+                      const userHistory = getUserAttendanceHistory(meeting, currentUser.uid)
+                      const userRate = getUserAttendanceRate(meeting, currentUser.uid)
+                      
+                      return userHistory.length > 0 ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 text-center">
+                              <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                                {userHistory.length}
+                              </div>
+                              <div className="text-xs text-green-600 dark:text-green-400">
+                                출석 횟수
+                              </div>
+                            </div>
+                            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-center">
+                              <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                                {userRate}%
+                              </div>
+                              <div className="text-xs text-blue-600 dark:text-blue-400">
+                                출석률
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              최근 출석 기록
+                            </h5>
+                            {userHistory.slice(0, 5).map((record, index) => (
+                              <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                <div className="flex items-center space-x-2">
+                                  <CheckCircle className="w-4 h-4 text-green-500" />
+                                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                                    {format(new Date(record.date), 'M월 d일', { locale: ko })}
+                                  </span>
+                                </div>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  출석 완료
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-6">
+                          <Users className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                          <p className="text-gray-500 dark:text-gray-400">
+                            아직 출석 기록이 없습니다
+                          </p>
+                        </div>
+                      )
+                    })()}
+                  </div>
                 </div>
               )}
             </motion.div>
