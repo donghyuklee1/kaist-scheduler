@@ -65,19 +65,26 @@ const CalendarView = ({ events, onEventClick, onAddEvent, currentUser, selectedD
 
   const handleDateClick = (date) => {
     console.log('CalendarView - 날짜 클릭:', format(date, 'yyyy-MM-dd'))
+    console.log('CalendarView - 날짜 객체:', date)
+    console.log('CalendarView - 현재 selectedDate:', selectedDate)
     setSelectedDate(date)
     if (propSetSelectedDate) {
       propSetSelectedDate(date)
+      console.log('CalendarView - 부모 컴포넌트에 날짜 전달:', format(date, 'yyyy-MM-dd'))
     }
     setShowDateModal(true)
   }
 
   const handleAddEvent = () => {
     console.log('CalendarView - 일정 추가, 선택된 날짜:', format(selectedDate, 'yyyy-MM-dd'))
+    console.log('CalendarView - selectedDate 객체:', selectedDate)
+    console.log('CalendarView - propSelectedDate:', propSelectedDate)
+    const eventDate = format(selectedDate, 'yyyy-MM-dd')
+    console.log('CalendarView - 이벤트 날짜 설정:', eventDate)
     setEventForm({
       title: '',
       description: '',
-      date: format(selectedDate, 'yyyy-MM-dd'),
+      date: eventDate,
       time: '',
       location: '',
       category: 'personal',
@@ -154,18 +161,19 @@ const CalendarView = ({ events, onEventClick, onAddEvent, currentUser, selectedD
   const renderCalendarGrid = () => {
     const rows = []
     let days = []
-    let day = startDate
+    let day = new Date(startDate)
 
     while (day <= endDate) {
       for (let i = 0; i < 7; i++) {
-        const dayEvents = getEventsForDate(day)
-        const isCurrentMonth = isSameMonth(day, monthStart)
-        const isSelected = isSameDay(day, selectedDate)
-        const isTodayDate = isToday(day)
+        const currentDay = new Date(day) // 새로운 Date 객체 생성
+        const dayEvents = getEventsForDate(currentDay)
+        const isCurrentMonth = isSameMonth(currentDay, monthStart)
+        const isSelected = isSameDay(currentDay, selectedDate)
+        const isTodayDate = isToday(currentDay)
 
         days.push(
           <motion.div
-            key={day}
+            key={format(currentDay, 'yyyy-MM-dd')} // 문자열로 key 설정
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className={`relative p-3 min-h-[120px] border-r border-b border-gray-200 dark:border-gray-700 cursor-pointer transition-all duration-300 ${
@@ -181,7 +189,10 @@ const CalendarView = ({ events, onEventClick, onAddEvent, currentUser, selectedD
                 ? 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 shadow-md' 
                 : ''
             }`}
-            onClick={() => handleDateClick(day)}
+            onClick={() => {
+              console.log('날짜 셀 클릭:', format(currentDay, 'yyyy-MM-dd'))
+              handleDateClick(currentDay)
+            }}
           >
             <div className={`text-sm font-medium mb-2 ${
               isCurrentMonth 
@@ -228,7 +239,7 @@ const CalendarView = ({ events, onEventClick, onAddEvent, currentUser, selectedD
         day = addDays(day, 1)
       }
       rows.push(
-        <div key={day} className="grid grid-cols-7 gap-0">
+        <div key={`week-${rows.length}`} className="grid grid-cols-7 gap-0">
           {days}
         </div>
       )
