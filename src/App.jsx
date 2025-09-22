@@ -605,7 +605,7 @@ function App() {
               <CalendarView
                 events={events}
                 onEventClick={openEventModal}
-                onAddEvent={() => openEventModal()}
+                onAddEvent={null}
                 currentUser={user}
                 selectedDate={selectedDate}
                 setSelectedDate={setSelectedDate}

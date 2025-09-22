@@ -8,6 +8,13 @@ import { createEvent, deleteEvent } from '../services/firestoreService'
 const CalendarView = ({ events, onEventClick, onAddEvent, currentUser, selectedDate: propSelectedDate, setSelectedDate: propSetSelectedDate }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(propSelectedDate || new Date())
+
+  // propSelectedDate가 변경될 때 로컬 selectedDate도 업데이트
+  useEffect(() => {
+    if (propSelectedDate) {
+      setSelectedDate(propSelectedDate)
+    }
+  }, [propSelectedDate])
   const [showDateModal, setShowDateModal] = useState(false)
   const [showEventModal, setShowEventModal] = useState(false)
   const [editingEvent, setEditingEvent] = useState(null)
@@ -57,6 +64,7 @@ const CalendarView = ({ events, onEventClick, onAddEvent, currentUser, selectedD
   }
 
   const handleDateClick = (date) => {
+    console.log('CalendarView - 날짜 클릭:', format(date, 'yyyy-MM-dd'))
     setSelectedDate(date)
     if (propSetSelectedDate) {
       propSetSelectedDate(date)
@@ -65,6 +73,7 @@ const CalendarView = ({ events, onEventClick, onAddEvent, currentUser, selectedD
   }
 
   const handleAddEvent = () => {
+    console.log('CalendarView - 일정 추가, 선택된 날짜:', format(selectedDate, 'yyyy-MM-dd'))
     setEventForm({
       title: '',
       description: '',
