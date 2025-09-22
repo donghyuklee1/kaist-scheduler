@@ -5,9 +5,9 @@ import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSa
 import { ko } from 'date-fns/locale'
 import { createEvent, deleteEvent } from '../services/firestoreService'
 
-const CalendarView = ({ events, onEventClick, onAddEvent, currentUser }) => {
+const CalendarView = ({ events, onEventClick, onAddEvent, currentUser, selectedDate: propSelectedDate, setSelectedDate: propSetSelectedDate }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date())
-  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [selectedDate, setSelectedDate] = useState(propSelectedDate || new Date())
   const [showDateModal, setShowDateModal] = useState(false)
   const [showEventModal, setShowEventModal] = useState(false)
   const [editingEvent, setEditingEvent] = useState(null)
@@ -58,6 +58,9 @@ const CalendarView = ({ events, onEventClick, onAddEvent, currentUser }) => {
 
   const handleDateClick = (date) => {
     setSelectedDate(date)
+    if (propSetSelectedDate) {
+      propSetSelectedDate(date)
+    }
     setShowDateModal(true)
   }
 
@@ -154,30 +157,34 @@ const CalendarView = ({ events, onEventClick, onAddEvent, currentUser }) => {
         days.push(
           <motion.div
             key={day}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className={`relative p-2 min-h-[120px] border border-gray-200 dark:border-gray-700 cursor-pointer transition-all duration-300 ${
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`relative p-3 min-h-[120px] border-r border-b border-gray-200 dark:border-gray-700 cursor-pointer transition-all duration-300 ${
               isCurrentMonth 
-                ? 'bg-white dark:bg-gray-800' 
+                ? 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700' 
                 : 'bg-gray-50 dark:bg-gray-900'
             } ${
               isSelected 
-                ? 'ring-2 ring-kaist-blue bg-blue-50 dark:bg-blue-900/20' 
+                ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg' 
                 : ''
             } ${
               isTodayDate 
-                ? 'bg-blue-100 dark:bg-blue-900/30' 
+                ? 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 shadow-md' 
                 : ''
             }`}
             onClick={() => handleDateClick(day)}
           >
-            <div className={`text-sm font-medium mb-1 ${
+            <div className={`text-sm font-medium mb-2 ${
               isCurrentMonth 
                 ? 'text-gray-900 dark:text-gray-100' 
                 : 'text-gray-400 dark:text-gray-500'
             } ${
               isTodayDate 
-                ? 'text-blue-600 dark:text-blue-400 font-bold' 
+                ? 'text-blue-700 dark:text-blue-300 font-bold text-lg' 
+                : ''
+            } ${
+              isSelected
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
                 : ''
             }`}>
               {format(day, 'd')}
@@ -223,46 +230,71 @@ const CalendarView = ({ events, onEventClick, onAddEvent, currentUser }) => {
 
   return (
     <div className="space-y-6">
-      {/* 달력 헤더 */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {format(currentMonth, 'yyyy년 M월', { locale: ko })} 📅
-        </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          날짜를 클릭하여 일정을 추가하세요
-        </p>
-        <div className="flex items-center space-x-2">
+      {/* 달력 헤더 - 세련된 디자인 */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          {/* 이전 달 버튼 */}
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={prevMonth}
-            className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="p-3 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 shadow-md"
           >
-            <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            <ChevronLeft className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           </motion.button>
+
+          {/* 연도/월 중앙 배치 */}
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+              {format(currentMonth, 'yyyy년 M월', { locale: ko })}
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              날짜를 클릭하여 일정을 추가하세요
+            </p>
+          </div>
+
+          {/* 다음 달 버튼 */}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={nextMonth}
+            className="p-3 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 shadow-md"
+          >
+            <ChevronRight className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+          </motion.button>
+        </div>
+
+        {/* 오늘 버튼 */}
+        <div className="flex justify-center">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={nextMonth}
-            className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            onClick={() => setCurrentMonth(new Date())}
+            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-medium transition-colors shadow-md"
           >
-            <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            오늘
           </motion.button>
         </div>
       </div>
 
-      {/* 요일 헤더 */}
-      <div className="grid grid-cols-7 gap-0">
-        {['월', '화', '수', '목', '금', '토', '일'].map((day) => (
-          <div key={day} className="p-3 text-center font-semibold text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-            {day}
-          </div>
-        ))}
-      </div>
+      {/* 요일 헤더 - 세련된 디자인 */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="grid grid-cols-7">
+          {['월', '화', '수', '목', '금', '토', '일'].map((day, index) => (
+            <div key={day} className={`p-4 text-center font-semibold text-gray-600 dark:text-gray-400 ${
+              index === 6 ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' : 
+              index === 5 ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' :
+              'bg-gray-50 dark:bg-gray-700'
+            }`}>
+              {day}
+            </div>
+          ))}
+        </div>
 
-      {/* 달력 그리드 */}
-      <div className="space-y-0">
-        {renderCalendarGrid()}
+        {/* 달력 그리드 */}
+        <div className="space-y-0">
+          {renderCalendarGrid()}
+        </div>
       </div>
 
       {/* 날짜별 일정 모달 */}
@@ -418,12 +450,12 @@ const CalendarView = ({ events, onEventClick, onAddEvent, currentUser }) => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       날짜 *
                     </label>
-                    <input
-                      type="date"
-                      value={eventForm.date}
-                      onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
-                      className="w-full input-field"
-                    />
+                    <div className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white">
+                      {format(new Date(eventForm.date), 'yyyy년 M월 d일 (E)', { locale: ko })}
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      캘린더에서 선택한 날짜입니다
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

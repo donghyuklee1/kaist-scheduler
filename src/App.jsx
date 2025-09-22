@@ -607,6 +607,8 @@ function App() {
                 onEventClick={openEventModal}
                 onAddEvent={() => openEventModal()}
                 currentUser={user}
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
               />
             ) : view === 'meetings' ? (
               showMeetingDetails ? (
