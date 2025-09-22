@@ -15,6 +15,9 @@ const Dashboard = ({
   onViewChange,
   currentUser 
 }) => {
+  // 이벤트 데이터 디버깅
+  console.log('Dashboard - 받은 이벤트 데이터:', events.length, '개 이벤트')
+  console.log('Dashboard - 이벤트 목록:', events)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [showDateEvents, setShowDateEvents] = useState(false)
   const [selectedDateForEvents, setSelectedDateForEvents] = useState(null)

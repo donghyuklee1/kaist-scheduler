@@ -6,6 +6,9 @@ import { ko } from 'date-fns/locale'
 import { createEvent, deleteEvent } from '../services/firestoreService'
 
 const CalendarView = ({ events, onEventClick, onAddEvent, currentUser, selectedDate: propSelectedDate, setSelectedDate: propSetSelectedDate }) => {
+  // 이벤트 데이터 디버깅
+  console.log('CalendarView - 받은 이벤트 데이터:', events.length, '개 이벤트')
+  console.log('CalendarView - 이벤트 목록:', events)
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(propSelectedDate || new Date())
 
@@ -137,6 +140,9 @@ const CalendarView = ({ events, onEventClick, onAddEvent, currentUser, selectedD
         await createEvent(eventData, currentUser.uid)
       }
 
+      console.log('일정 저장 성공!')
+      alert('일정이 성공적으로 저장되었습니다.')
+      
       setShowEventModal(false)
       setEventForm({
         title: '',

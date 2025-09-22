@@ -132,6 +132,8 @@ function App() {
     let unsubscribeNotifications = null
     if (user) {
       unsubscribeEvents = subscribeToUserEvents(user.uid, (eventsData) => {
+        console.log('App.jsx - 이벤트 데이터 업데이트:', eventsData.length, '개 이벤트')
+        console.log('App.jsx - 이벤트 목록:', eventsData)
         setEvents(eventsData)
       })
       
