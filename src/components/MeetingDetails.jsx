@@ -190,9 +190,25 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
   }
 
   // 출석 관리 관련 함수들
+  
+  // 당일 출석확인 여부 확인
+  const hasAttendanceToday = () => {
+    if (!meeting?.attendanceHistory) return false
+    const today = new Date().toISOString().split('T')[0]
+    return meeting.attendanceHistory[today]?.isActive === false // 완료된 출석확인이 있는지 확인
+  }
+  
   const handleStartAttendance = async () => {
     try {
       setIsLoading(true)
+      
+      // 당일 이미 출석확인을 했는지 확인
+      if (hasAttendanceToday()) {
+        alert('오늘은 이미 출석확인을 완료했습니다.')
+        setIsLoading(false)
+        return
+      }
+      
       // 당일 날짜 사용 (YYYY-MM-DD 형식)
       const today = new Date().toISOString().split('T')[0]
       const result = await startAttendanceCheck(meeting.id, currentUser.uid, today)
@@ -223,8 +239,20 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
     try {
       setIsLoading(true)
       await endAttendanceCheck(meeting.id, currentUser.uid)
+      
+      // 즉시 로컬 상태 업데이트
       setAttendanceCode('')
       setTimeLeft(0)
+      
+      // 즉시 attendanceStatus 업데이트
+      setAttendanceStatus({
+        isActive: false,
+        code: '',
+        endTime: null,
+        attendees: [],
+        currentDate: null
+      })
+      
       console.log('출석 확인이 종료되었습니다.')
     } catch (error) {
       alert('출석 확인 종료에 실패했습니다: ' + error.message)
@@ -1418,13 +1446,17 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
                             </motion.button>
                           ) : (
                             <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
+                              whileHover={{ scale: hasAttendanceToday() ? 1 : 1.05 }}
+                              whileTap={{ scale: hasAttendanceToday() ? 1 : 0.95 }}
                               onClick={handleStartAttendance}
-                              disabled={isLoading}
-                              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+                              disabled={isLoading || hasAttendanceToday()}
+                              className={`px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 ${
+                                hasAttendanceToday() 
+                                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+                                  : 'bg-green-500 hover:bg-green-600 text-white'
+                              }`}
                             >
-                              {isLoading ? '시작 중...' : '출석 확인 시작'}
+                              {isLoading ? '시작 중...' : hasAttendanceToday() ? '오늘 출석확인 완료' : '출석 확인 시작'}
                             </motion.button>
                           )}
                         </div>
