@@ -196,9 +196,21 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
       // 당일 날짜 사용 (YYYY-MM-DD 형식)
       const today = new Date().toISOString().split('T')[0]
       const result = await startAttendanceCheck(meeting.id, currentUser.uid, today)
+      
+      // 즉시 로컬 상태 업데이트
       setAttendanceCode(result.code)
       setTimeLeft(180) // 3분 = 180초
-      // 알림 대신 자동으로 코드 표시 (화면 새로고침 없이)
+      
+      // 즉시 attendanceStatus 업데이트 (Firestore 반영 전에 미리 업데이트)
+      const endTime = new Date(result.endTime)
+      setAttendanceStatus({
+        isActive: true,
+        code: result.code,
+        endTime: endTime.toISOString(),
+        attendees: [],
+        currentDate: today
+      })
+      
       console.log(`출석 확인 시작: ${result.code}`)
     } catch (error) {
       alert('출석 확인 시작에 실패했습니다: ' + error.message)
@@ -303,8 +315,8 @@ const MeetingDetails = ({ meeting, currentUser, onBack, onDeleteMeeting }) => {
     }
   }, [meeting])
 
-  // 주기적 새로고침 설정 (3초마다)
-  usePeriodicRefresh(refreshAttendanceStatus, 3000, [meeting?.id])
+  // 주기적 새로고침 설정 (1초마다)
+  usePeriodicRefresh(refreshAttendanceStatus, 1000, [meeting?.id])
 
   // 출석 상태가 변경될 때마다 실시간 업데이트
   useEffect(() => {
